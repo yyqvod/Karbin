@@ -9,13 +9,6 @@ defaultuseroutput.o: ../utils/text.h ../utils/connexion.h
 defaultuseroutput.o: ../utils/mypthread.h ../utils/ConstantSizedFifo.h
 defaultuseroutput.o: ../utils/SyncFifo.h ../fetch/checker.h
 defaultuseroutput.o: ../interf/output.h
-input.o: ../options.h ../config.h ../types.h ../global.h ../fetch/file.h
-input.o: ../utils/url.h ../utils/string.h ../utils/debug.h ../utils/Vector.h
-input.o: ../fetch/site.h ../utils/Fifo.h ../fetch/specbuf.h
-input.o: ../fetch/hashTable.h ../utils/hashDup.h ../utils/PersistentFifo.h
-input.o: ../utils/text.h ../utils/connexion.h ../utils/mypthread.h
-input.o: ../utils/ConstantSizedFifo.h ../utils/SyncFifo.h ../fetch/checker.h
-input.o: ../interf/input.h
 mirrorsaveuseroutput.o: ../options.h ../config.h ../types.h ../global.h
 mirrorsaveuseroutput.o: ../fetch/file.h ../utils/url.h ../utils/string.h
 mirrorsaveuseroutput.o: ../utils/debug.h ../utils/Vector.h ../fetch/site.h
@@ -48,7 +41,7 @@ statsuseroutput.o: ../utils/hashDup.h ../utils/PersistentFifo.h
 statsuseroutput.o: ../utils/text.h ../utils/connexion.h ../utils/mypthread.h
 statsuseroutput.o: ../utils/ConstantSizedFifo.h ../utils/SyncFifo.h
 statsuseroutput.o: ../fetch/checker.h ../interf/output.h
-useroutput.o: ../options.h ../config.h ../interf/defaultuseroutput.cc
+useroutput.o: ../options.h ../config.h ../interf/mirrorsaveuseroutput.cc
 useroutput.o: ../types.h ../global.h ../fetch/file.h ../utils/url.h
 useroutput.o: ../utils/string.h ../utils/debug.h ../utils/Vector.h
 useroutput.o: ../fetch/site.h ../utils/Fifo.h ../fetch/specbuf.h

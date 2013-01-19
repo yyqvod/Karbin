@@ -29,11 +29,3 @@ url.o: ../fetch/site.h ../utils/Fifo.h ../fetch/specbuf.h
 url.o: ../fetch/hashTable.h ../utils/hashDup.h ../utils/PersistentFifo.h
 url.o: ../utils/text.h ../utils/connexion.h ../utils/mypthread.h
 url.o: ../utils/ConstantSizedFifo.h ../utils/SyncFifo.h ../fetch/checker.h
-webserver.o: ../options.h ../config.h ../global.h ../fetch/file.h ../types.h
-webserver.o: ../utils/url.h ../utils/string.h ../utils/debug.h
-webserver.o: ../utils/Vector.h ../fetch/site.h ../utils/Fifo.h
-webserver.o: ../fetch/specbuf.h ../fetch/hashTable.h ../utils/hashDup.h
-webserver.o: ../utils/PersistentFifo.h ../utils/text.h ../utils/connexion.h
-webserver.o: ../utils/mypthread.h ../utils/ConstantSizedFifo.h
-webserver.o: ../utils/SyncFifo.h ../fetch/checker.h ../fetch/sequencer.h
-webserver.o: ../utils/histogram.h ../interf/useroutput.h

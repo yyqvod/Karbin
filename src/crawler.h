@@ -2,7 +2,7 @@
 // Sebastien Ailleret
 // 18-11-99 -> 07-03-02
 
-/* This class contains all global variables */
+/* This class contains all crawler variables */
 
 #ifndef GLOBAL_H
 #define GLOBAL_H
@@ -27,8 +27,8 @@
 #include "fetch/site.h"
 #include "fetch/checker.h"
 
-#define addIPUrl() global::IPUrl++
-#define delIPUrl() global::IPUrl--
+#define addIPUrl() crawler::IPUrl++
+#define delIPUrl() crawler::IPUrl--
 
 /** This represent a connection : we have a fixed number of them
  * fetchOpen links them with servers
@@ -52,11 +52,11 @@ struct Connexion {
   void recycle ();
 };
 
-struct global {
-  /** Constructor : see global.cc for details */
-  global (int argc, char * argv[]);
+struct crawler {
+  /** Constructor : see crawler.cc for details */
+  crawler (int argc, char * argv[]);
   /** Destructor : never used */
-  ~global ();
+  ~crawler ();
   /** current time : avoid to many calls to time(NULL) */
   static time_t now;
   /** List of pages allready seen (one bit per page) */
@@ -135,10 +135,6 @@ struct global {
   static uint dnsConn;
   /** number of urls in IPSites */
   static int IPUrl;
-  /** port on which is launched the http statistic webserver */
-  static unsigned short int httpPort;
-  /** port on which input wait for queries */
-  static unsigned short int inputPort;
   /** parse configuration file */
   static void parseFile (char *file);
   /** read the domain limit */
@@ -166,8 +162,8 @@ struct global {
 
 /** set this fds for next poll */
 #define setPoll(fds, event) \
-  global::pollfds[global::posPoll].fd = fds; \
-  global::pollfds[global::posPoll].events = event; \
-  global::posPoll++
+  crawler::pollfds[crawler::posPoll].fd = fds; \
+  crawler::pollfds[crawler::posPoll].events = event; \
+  crawler::posPoll++
 
 #endif // GLOBAL_H

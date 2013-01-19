@@ -19,73 +19,70 @@
 #include "options.h"
 
 #include "types.h"
-#include "global.h"
+#include "crawler.h"
 #include "utils/text.h"
 #include "utils/Fifo.h"
 #include "utils/debug.h"
 #include "fetch/site.h"
 #include "interf/output.h"
-#include "interf/input.h"
 
 
 using namespace std;
 
 ///////////////////////////////////////////////////////////
-// Struct global
+// Struct crawler
 ///////////////////////////////////////////////////////////
 
 // define all the static variables
-time_t global::now;
-hashTable *global::seen;
+time_t crawler::now;
+hashTable *crawler::seen;
 #ifdef NO_DUP
-hashDup *global::hDuplicate;
+hashDup *crawler::hDuplicate;
 #endif // NO_DUP
-SyncFifo<url> *global::URLsPriority;
-SyncFifo<url> *global::URLsPriorityWait;
-uint global::readPriorityWait=0;
-PersistentFifo *global::URLsDisk;
-PersistentFifo *global::URLsDiskWait;
-uint global::readWait=0;
-IPSite *global::IPSiteList;
-NamedSite *global::namedSiteList;
-Fifo<IPSite> *global::okSites;
-Fifo<NamedSite> *global::dnsSites;
-Connexion *global::connexions;
-adns_state global::ads;
-uint global::nbDnsCalls = 0;
-ConstantSizedFifo<Connexion> *global::freeConns;
+SyncFifo<url> *crawler::URLsPriority;
+SyncFifo<url> *crawler::URLsPriorityWait;
+uint crawler::readPriorityWait=0;
+PersistentFifo *crawler::URLsDisk;
+PersistentFifo *crawler::URLsDiskWait;
+uint crawler::readWait=0;
+IPSite *crawler::IPSiteList;
+NamedSite *crawler::namedSiteList;
+Fifo<IPSite> *crawler::okSites;
+Fifo<NamedSite> *crawler::dnsSites;
+Connexion *crawler::connexions;
+adns_state crawler::ads;
+uint crawler::nbDnsCalls = 0;
+ConstantSizedFifo<Connexion> *crawler::freeConns;
 #ifdef THREAD_OUTPUT
-ConstantSizedFifo<Connexion> *global::userConns;
+ConstantSizedFifo<Connexion> *crawler::userConns;
 #endif
-Interval *global::inter;
-int8_t global::depthInSite;
-bool global::externalLinks = true;
-time_t global::waitDuration;
-char *global::userAgent;
-char *global::sender;
-char *global::headers;
-char *global::headersRobots;
-sockaddr_in *global::proxyAddr;
-Vector<char> *global::domains;
-Vector<char> global::forbExt;
-uint global::nb_conn;
-uint global::dnsConn;
-unsigned short int global::httpPort;
-unsigned short int global::inputPort;
-struct pollfd *global::pollfds;
-uint global::posPoll;
-uint global::sizePoll;
-short *global::ansPoll;
-int global::maxFds;
+Interval *crawler::inter;
+int8_t crawler::depthInSite;
+bool crawler::externalLinks = true;
+time_t crawler::waitDuration;
+char *crawler::userAgent;
+char *crawler::sender;
+char *crawler::headers;
+char *crawler::headersRobots;
+sockaddr_in *crawler::proxyAddr;
+Vector<char> *crawler::domains;
+Vector<char> crawler::forbExt;
+uint crawler::nb_conn;
+uint crawler::dnsConn;
+struct pollfd *crawler::pollfds;
+uint crawler::posPoll;
+uint crawler::sizePoll;
+short *crawler::ansPoll;
+int crawler::maxFds;
 #ifdef MAXBANDWIDTH
-long int global::remainBand = MAXBANDWIDTH;
+long int crawler::remainBand = MAXBANDWIDTH;
 #endif // MAXBANDWIDTH
-int global::IPUrl = 0;
+int crawler::IPUrl = 0;
 
 /** Constructor : initialize almost everything
  * Everything is read from the config file (larbin.conf by default)
  */
-global::global (int argc, char *argv[]) {
+crawler::crawler (int argc, char *argv[]) {
   char *configFile = "larbin.conf";
 #ifdef RELOAD
   bool reload = true;
@@ -119,8 +116,6 @@ global::global (int argc, char *argv[]) {
   sender = "larbin@unspecified.mail";
   nb_conn = 20;
   dnsConn = 3;
-  httpPort = 0;
-  inputPort = 0;  // by default, no input available
   proxyAddr = NULL;
   domains = NULL;
   // FIFOs
@@ -141,7 +136,7 @@ global::global (int argc, char *argv[]) {
   crash("Read the configuration file");
   parseFile(configFile);
   // Initialize everything
-  crash("Create global values");
+  crash("Create crawler values");
   // Headers
   LarbinString strtmp;
   strtmp.addString("\r\nUser-Agent: ");
@@ -189,7 +184,6 @@ global::global (int argc, char *argv[]) {
   adns_init(&ads, flags, NULL);
   // call init functions of all modules
   initSpecific();
-  initInput();
   initOutput();
   initSite();
   // let's ignore SIGPIPE
@@ -204,12 +198,12 @@ global::global (int argc, char *argv[]) {
 
 /** Destructor : never used because the program should never end !
  */
-global::~global () {
+crawler::~crawler () {
   assert(false);
 }
 
 /** parse configuration file */
-void global::parseFile (char *file) {
+void crawler::parseFile (char *file) {
   int fds = open(file, O_RDONLY);
   if (fds < 0) {
 	cerr << "cannot open config file (" << file << ") : "
@@ -236,7 +230,7 @@ void global::parseFile (char *file) {
 	  sender = newString(nextToken(&posParse));
 	} else if (!strcasecmp(tok, "startUrl")) {
 	  tok = nextToken(&posParse);
-      url *u = new url(tok, global::depthInSite, (url *) NULL);
+      url *u = new url(tok, crawler::depthInSite, (url *) NULL);
       if (u->isValid()) {
         printf("Start from: %s\n", tok);
         check(u);
@@ -271,12 +265,6 @@ void global::parseFile (char *file) {
 	} else if (!strcasecmp(tok, "dnsConnexions")) {
 	  tok = nextToken(&posParse);
 	  dnsConn = atoi(tok);
-	} else if (!strcasecmp(tok, "httpPort")) {
-	  tok = nextToken(&posParse);
-	  httpPort = atoi(tok);
-	} else if (!strcasecmp(tok, "inputPort")) {
-	  tok = nextToken(&posParse);
-	  inputPort = atoi(tok);
 	} else if (!strcasecmp(tok, "depthInSite")) {
 	  tok = nextToken(&posParse);
 	  depthInSite = atoi(tok);
@@ -296,7 +284,7 @@ void global::parseFile (char *file) {
 }
 
 /** read the domain limit */
-void global::manageDomain (char **posParse) {
+void crawler::manageDomain (char **posParse) {
   char *tok = nextToken(posParse);
   if (domains == NULL) {
 	domains = new Vector<char>;
@@ -312,7 +300,7 @@ void global::manageDomain (char **posParse) {
 }
 
 /** read the forbidden extensions */
-void global::manageExt (char **posParse) {
+void crawler::manageExt (char **posParse) {
   char *tok = nextToken(posParse);
   while (tok != NULL && strcasecmp(tok, "end")) {
     int l = strlen(tok);
@@ -331,7 +319,7 @@ void global::manageExt (char **posParse) {
 }
 
 /** make sure the max fds has not been reached */
-void global::verifMax (int fd) {
+void crawler::verifMax (int fd) {
   if (fd >= maxFds) {
     int n = 2 * maxFds;
     if (fd >= n) {
