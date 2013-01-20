@@ -13,35 +13,35 @@
 #include "utils/url.h"
 
 class hashTable {
- private:
-  ssize_t size;
-  char *table;
+    private:
+        ssize_t size;
+        char *table;
 
- public:
-  /* constructor */
-  hashTable (bool create);
+    public:
+        /* constructor */
+        hashTable (bool create);
 
-  /* destructor */
-  ~hashTable ();
+        /* destructor */
+        ~hashTable ();
 
-  /* save the hashTable in a file */
-  void save();
+        /* save the hashTable in a file */
+        void save();
 
-  /* test if this url is allready in the hashtable
-   * return true if it has been added
-   * return false if it has allready been seen
-   */
-  bool test (url *U);
+        /* test if this url is allready in the hashtable
+         * return true if it has been added
+         * return false if it has allready been seen
+         */
+        bool test (url *U);
 
-  /* set a url as present in the hashtable
-   */
-  void set (url *U);
+        /* set a url as present in the hashtable
+         */
+        void set (url *U);
 
-  /* add a new url in the hashtable
-   * return true if it has been added
-   * return false if it has allready been seen
-   */
-  bool testSet (url *U);
+        /* add a new url in the hashtable
+         * return true if it has been added
+         * return false if it has allready been seen
+         */
+        bool testSet (url *U);
 };
 
 #endif // HASHTABLE_H

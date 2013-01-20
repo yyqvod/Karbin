@@ -9,7 +9,7 @@
 #include "options.h"
 
 #include "types.h"
-#include "global.h"
+#include "crawler.h"
 #include "fetch/file.h"
 #include "utils/text.h"
 #include "utils/debug.h"
@@ -34,17 +34,17 @@ static double totalbytes = 0;
  * @param page the page that has been fetched
  */
 void loaded (html *page) {
-  uint32_t l = page->getLength();
-  int t = l / taille;
-  if (t >= nb) {
-    t = nb-1;
-  }
-  tabs[t]++;
-  if (tabs[t] > maxs) maxs = tabs[t];
-  tabb[t] += (double) l;
-  if (tabb[t] > maxb) maxb = tabb[t];
-  totalpages++;
-  totalbytes += (double) l;
+    uint32_t l = page->getLength();
+    int t = l / taille;
+    if (t >= nb) {
+        t = nb-1;
+    }
+    tabs[t]++;
+    if (tabs[t] > maxs) maxs = tabs[t];
+    tabb[t] += (double) l;
+    if (tabb[t] > maxb) maxb = tabb[t];
+    totalpages++;
+    totalbytes += (double) l;
 }
 
 /** The fetch failed
@@ -57,10 +57,10 @@ void failure (url *u, FetchError reason) {
 /** initialisation function
  */
 void initUserOutput () {
-  for (int i=0; i<nb; i++) {
-    tabs[i] = 0;
-    tabb[i] = 0;
-  }
+    for (int i=0; i<nb; i++) {
+        tabs[i] = 0;
+        tabb[i] = 0;
+    }
 }
 
 /** stats, called in particular by the webserver
@@ -70,25 +70,25 @@ void initUserOutput () {
  * as efficiency
  */
 static void dessine(int fds, double *tab, double *maxi) {
-  for (int i=0; i<nb; i++) {
-    ecrire(fds, "|");
-    int n = (int) ((tab[i] * larg) / (*maxi+1));
-    for (int j=0; j<n; j++) ecrire(fds, "*");
-    ecrire(fds, "\n");
-  }
+    for (int i=0; i<nb; i++) {
+        ecrire(fds, "|");
+        int n = (int) ((tab[i] * larg) / (*maxi+1));
+        for (int j=0; j<n; j++) ecrire(fds, "*");
+        ecrire(fds, "\n");
+    }
 }
 
 void outputStats(int fds) {
-  ecrire(fds, "Stats for ");
-  ecrireInt(fds, totalpages);
-  ecrire(fds, " pages.\nMean size of a page : ");
-  ecrireInt(fds, ((int) totalbytes) / totalpages);
-  ecrire(fds, "\n\nProportion of pages per size (one row is ");
-  ecrireInt(fds, taille);
-  ecrire(fds, " bytes, max size is ");
-  ecrireInt(fds, taille*nb);
-  ecrire(fds, " bytes) :\n\n");
-  dessine(fds, tabs, &maxs);
-  ecrire(fds, "\n\nbytes transfered by size :\n\n");
-  dessine(fds, tabb, &maxb);
+    ecrire(fds, "Stats for ");
+    ecrireInt(fds, totalpages);
+    ecrire(fds, " pages.\nMean size of a page : ");
+    ecrireInt(fds, ((int) totalbytes) / totalpages);
+    ecrire(fds, "\n\nProportion of pages per size (one row is ");
+    ecrireInt(fds, taille);
+    ecrire(fds, " bytes, max size is ");
+    ecrireInt(fds, taille*nb);
+    ecrire(fds, " bytes) :\n\n");
+    dessine(fds, tabs, &maxs);
+    ecrire(fds, "\n\nbytes transfered by size :\n\n");
+    dessine(fds, tabb, &maxb);
 }

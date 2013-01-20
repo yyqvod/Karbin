@@ -9,7 +9,7 @@
 #include "options.h"
 
 #include "types.h"
-#include "global.h"
+#include "crawler.h"
 #include "fetch/file.h"
 #include "utils/text.h"
 #include "utils/debug.h"
@@ -25,12 +25,12 @@ using namespace std;
  */
 void fetchFail (url *u, FetchError err, bool interesting=false) {
 #ifdef SPECIFICSEARCH
-  if (interesting
-      || (privilegedExts[0] != NULL && matchPrivExt(u->getFile()))) {
-    failure(u, err);
-  }
+    if (interesting
+            || (privilegedExts[0] != NULL && matchPrivExt(u->getFile()))) {
+        failure(u, err);
+    }
 #else // not a SPECIFICSEARCH
-  failure(u, err);
+    failure(u, err);
 #endif
 }
 
@@ -38,46 +38,46 @@ void fetchFail (url *u, FetchError err, bool interesting=false) {
  * report the situation ! (and make some stats)
  */
 void endOfLoad (html *parser, FetchError err) {
-  answers(err);
-  switch (err) {
-  case success:
+    answers(err);
+    switch (err) {
+        case success:
 #ifdef SPECIFICSEARCH
-    if (parser->isInteresting) {
-      interestingPage();
-      loaded(parser);
-    }
+            if (parser->isInteresting) {
+                interestingPage();
+                loaded(parser);
+            }
 #else // not a SPECIFICSEARCH
-    loaded(parser);
+            loaded(parser);
 #endif // SPECIFICSEARCH
-    break;
-  default:
-    fetchFail(parser->getUrl(), err, parser->isInteresting);
-    break;
-  }
+            break;
+        default:
+            fetchFail(parser->getUrl(), err, parser->isInteresting);
+            break;
+    }
 }
 
 #ifdef THREAD_OUTPUT
 /** In this thread, end user manage the result of the crawl
  */
 static void *startOutput (void *none) {
-  initUserOutput();
-  for (;;) {
-    Connexion *conn = global::userConns->get();
-    endOfLoad((html *)conn->parser, conn->err);
-    conn->recycle();
-    global::freeConns->put(conn);
-  }
-  return NULL;
+    initUserOutput();
+    for (;;) {
+        Connexion *conn = crawler::userConns->get();
+        endOfLoad((html *)conn->parser, conn->err);
+        conn->recycle();
+        crawler::freeConns->put(conn);
+    }
+    return NULL;
 }
 
 void initOutput () {
-  startThread(startOutput, NULL);
+    startThread(startOutput, NULL);
 }
 
 #else // THREAD_OUTPUT not defined
 
 void initOutput () {
-  initUserOutput();
+    initUserOutput();
 }
 
 #endif // THREAD_OUTPUT

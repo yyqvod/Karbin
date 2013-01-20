@@ -10,7 +10,7 @@
 
 #include "options.h"
 
-#include "global.h"
+#include "crawler.h"
 #include "utils/Fifo.h"
 #include "utils/debug.h"
 #include "fetch/site.h"
@@ -22,50 +22,50 @@ using namespace std;
  * work inside the main thread
  */
 void fetchOpen () {
-  static time_t next_call = 0;
-  if (global::now < next_call) { // too early to come back
-    return;
-  }
-  int cont = 1;
-  while (cont && global::freeConns->isNonEmpty()) {
-    IPSite *s = global::okSites->tryGet();
-    if (s == NULL) {
-      cont = 0;
-    } else {
-      next_call = s->fetch();
-      cont = (next_call == 0);
+    static time_t next_call = 0;
+    if (crawler::now < next_call) { // too early to come back
+        return;
     }
-  }
+    int cont = 1;
+    while (cont && crawler::freeConns->isNonEmpty()) {
+        IPSite *s = crawler::okSites->tryGet();
+        if (s == NULL) {
+            cont = 0;
+        } else {
+            next_call = s->fetch();
+            cont = (next_call == 0);
+        }
+    }
 }
 
 /* Opens sockets
  * this function perform dns calls, using adns
  */
 void fetchDns () {
-  // Submit queries
-  while (global::nbDnsCalls<global::dnsConn
-         && global::freeConns->isNonEmpty()
-         && global::IPUrl < maxIPUrls) { // try to avoid too many dns calls
-    NamedSite *site = global::dnsSites->tryGet();
-    if (site == NULL) {
-      break;
-    } else {
-      site->newQuery();
+    // Submit queries
+    while (crawler::nbDnsCalls<crawler::dnsConn
+            && crawler::freeConns->isNonEmpty()
+            && crawler::IPUrl < maxIPUrls) { // try to avoid too many dns calls
+        NamedSite *site = crawler::dnsSites->tryGet();
+        if (site == NULL) {
+            break;
+        } else {
+            site->newQuery();
+        }
     }
-  }
 
-  // Read available answers
-  while (global::nbDnsCalls && global::freeConns->isNonEmpty()) {
-    NamedSite *site;
-    adns_query quer = NULL;
-    adns_answer *ans;
-    int res = adns_check(global::ads, &quer, &ans, (void**)&site);
-    if (res == ESRCH || res == EAGAIN) {
-      // No more query or no more answers
-      break;
+    // Read available answers
+    while (crawler::nbDnsCalls && crawler::freeConns->isNonEmpty()) {
+        NamedSite *site;
+        adns_query quer = NULL;
+        adns_answer *ans;
+        int res = adns_check(crawler::ads, &quer, &ans, (void**)&site);
+        if (res == ESRCH || res == EAGAIN) {
+            // No more query or no more answers
+            break;
+        }
+        crawler::nbDnsCalls--;
+        site->dnsAns(ans);
+        free(ans); // ans has been allocated with malloc
     }
-    global::nbDnsCalls--;
-    site->dnsAns(ans);
-    free(ans); // ans has been allocated with malloc
-  }
 }

@@ -5,7 +5,7 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-#include "global.h"
+#include "crawler.h"
 
 /** The fetch failed
  * @param u the URL of the doc

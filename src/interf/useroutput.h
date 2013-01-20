@@ -12,12 +12,12 @@
  * @param page the page that has been fetched
  */
 void loaded (html *page);
-  // This function should manage anything
-  // page->getHeaders() gives a char* containing the http headers
-  // page->getPage() gives a char* containing the page itself
-  // those char* are statically allocated, so you should copy
-  // them if you want to keep them
-  // in order to accept \000 in the page, you can use page->getLength()
+// This function should manage anything
+// page->getHeaders() gives a char* containing the http headers
+// page->getPage() gives a char* containing the page itself
+// those char* are statically allocated, so you should copy
+// them if you want to keep them
+// in order to accept \000 in the page, you can use page->getLength()
 
 /** The fetch failed
  * @param u the URL of the doc
@@ -26,7 +26,7 @@ void loaded (html *page);
 void failure (url *u, FetchError reason);
 
 /** initialisation function
- * This function is called at the end of global initialisation
+ * This function is called at the end of crawler initialisation
  */
 void initUserOutput ();
 

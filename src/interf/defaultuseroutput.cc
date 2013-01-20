@@ -9,7 +9,7 @@
 #include "options.h"
 
 #include "types.h"
-#include "global.h"
+#include "crawler.h"
 #include "fetch/file.h"
 #include "utils/text.h"
 #include "utils/debug.h"
@@ -21,16 +21,16 @@ using namespace std;
  * @param page the page that has been fetched
  */
 void loaded (html *page) {
-  // Here should be the code for managing everything
-  // page->getHeaders() gives a char* containing the http headers
-  // page->getPage() gives a char* containing the page itself
-  // those char* are statically allocated, so you should copy
-  // them if you want to keep them
-  // in order to accept \000 in the page, you can use page->getLength()
+    // Here should be the code for managing everything
+    // page->getHeaders() gives a char* containing the http headers
+    // page->getPage() gives a char* containing the page itself
+    // those char* are statically allocated, so you should copy
+    // them if you want to keep them
+    // in order to accept \000 in the page, you can use page->getLength()
 #ifdef BIGSTATS
-  cout << "fetched : ";
-  page->getUrl()->print();
-  // cout << page->getHeaders() << "\n" << page->getPage() << "\n";
+    cout << "fetched : ";
+    page->getUrl()->print();
+    // cout << page->getHeaders() << "\n" << page->getPage() << "\n";
 #endif // BIGSTATS
 }
 
@@ -39,10 +39,10 @@ void loaded (html *page) {
  * @param reason reason of the fail
  */
 void failure (url *u, FetchError reason) {
-  // Here should be the code for managing everything
+    // Here should be the code for managing everything
 #ifdef BIGSTATS
-  cout << "fetched failed (" << (int) reason << ") : ";
-  u->print();
+    cout << "fetched failed (" << (int) reason << ") : ";
+    u->print();
 #endif // BIGSTATS
 }
 
@@ -59,5 +59,5 @@ void initUserOutput () {
  * as efficiency
  */
 void outputStats(int fds) {
-  ecrire(fds, "Nothing to declare");
+    ecrire(fds, "Nothing to declare");
 }

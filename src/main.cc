@@ -13,7 +13,7 @@
 
 #include "options.h"
 
-#include "global.h"
+#include "crawler.h"
 #include "utils/text.h"
 #include "fetch/checker.h"
 #include "fetch/sequencer.h"
@@ -34,14 +34,14 @@ static void cron ();
 // wait to limit bandwidth usage
 #ifdef MAXBANDWIDTH
 static void waitBandwidth (time_t *old) {
-  while (global::remainBand < 0) {
-    poll(NULL, 0, 10);
-    global::now = time(NULL);
-    if (*old != global::now) {
-      *old = global::now;
-      cron ();
+    while (crawler::remainBand < 0) {
+        poll(NULL, 0, 10);
+        crawler::now = time(NULL);
+        if (*old != crawler::now) {
+            *old = crawler::now;
+            cron ();
+        }
     }
-  }
 }
 #else
 #define waitBandwidth(x) ((void) 0)
@@ -54,66 +54,64 @@ static uint count = 0;
 ///////////////////////////////////////////////////////////
 // If this thread terminates, the whole program exits
 int main (int argc, char *argv[]) {
-  // create all the structures
-  global glob(argc, argv);
+    // create all the structures
+    crawler glob(argc, argv);
 
-  // Start the search
-  printf("%s is starting its search\n", global::userAgent);
-  time_t old = global::now;
+    // Start the search
+    printf("%s is starting its search\n", crawler::userAgent);
+    time_t old = crawler::now;
 
-  for (;;) {
-    // update time
-    global::now = time(NULL);
-    if (old != global::now) {
-      // this block is called every second
-      old = global::now;
-      cron();
+    for (;;) {
+        // update time
+        crawler::now = time(NULL);
+        if (old != crawler::now) {
+            // this block is called every second
+            old = crawler::now;
+            cron();
+        }
+        waitBandwidth(&old);
+        for (int i=0; i<crawler::maxFds; i++)
+            crawler::ansPoll[i] = 0;
+        for (uint i=0; i<crawler::posPoll; i++)
+            crawler::ansPoll[crawler::pollfds[i].fd] = crawler::pollfds[i].revents;
+        crawler::posPoll = 0;
+        sequencer();
+        fetchDns();
+        fetchOpen();
+        checkAll();
+        // select
+        poll(crawler::pollfds, crawler::posPoll, 10);
     }
-    stateMain(-count);
-    waitBandwidth(&old);
-    stateMain(1);
-    for (int i=0; i<global::maxFds; i++)
-      global::ansPoll[i] = 0;
-    for (uint i=0; i<global::posPoll; i++)
-      global::ansPoll[global::pollfds[i].fd] = global::pollfds[i].revents;
-    global::posPoll = 0;
-    sequencer();
-    fetchDns();
-    fetchOpen();
-    checkAll();
-    // select
-    poll(global::pollfds, global::posPoll, 10);
-  }
 }
 
 // a lot of stats and profiling things
 static void cron () {
-  // shall we stop
+    // shall we stop
 #ifdef EXIT_AT_END
-  if (global::URLsDisk->getLength() == 0
-      && global::URLsDiskWait->getLength() == 0
-      && debUrl == 0)
-    exit(0);
+    if (crawler::URLsDisk->getLength() == 0
+            && crawler::URLsDiskWait->getLength() == 0
+            && debUrl == 0)
+        exit(0);
 #endif // EXIT_AT_END
 
-  // look for timeouts
-  checkTimeout();
-  // see if we should read again urls in fifowait
-  if ((global::now % 300) == 0) {
-    global::readPriorityWait = global::URLsPriorityWait->getLength();
-    global::readWait = global::URLsDiskWait->getLength();
-  }
-  if ((global::now % 300) == 150) {
-    global::readPriorityWait = 0;
-    global::readWait = 0;
-  }
+    // look for timeouts
+    checkTimeout();
+    // see if we should read again urls in fifowait
+    if ((crawler::now % 300) == 0) {
+        crawler::readPriorityWait = crawler::URLsPriorityWait->getLength();
+        crawler::readWait = crawler::URLsDiskWait->getLength();
+    }
+    if ((crawler::now % 300) == 150) {
+        crawler::readPriorityWait = 0;
+        crawler::readWait = 0;
+    }
 
 #ifdef MAXBANDWIDTH
-  // give bandwidth
-  if (global::remainBand > 0) {
-    global::remainBand = MAXBANDWIDTH;
-  } else {
-    global::remainBand = global::remainBand + MAXBANDWIDTH;
-  }
+    // give bandwidth
+    if (crawler::remainBand > 0) {
+        crawler::remainBand = MAXBANDWIDTH;
+    } else {
+        crawler::remainBand = crawler::remainBand + MAXBANDWIDTH;
+    }
 #endif // MAXBANDWIDTH
 }
