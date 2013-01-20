@@ -11,13 +11,13 @@
 char lowerCase (char a);
 
 /* tests if b starts with a */
-bool startWith (char *a, char *b);
+bool startWith (const char *a, char *b);
 
 /* test if b is forbidden by pattern a */
 bool robotsMatch (char *a, char *b);
 
 /* tests if b starts with a ignoring case */
-bool startWithIgnoreCase (char *a, char *b);
+bool startWithIgnoreCase (const char *a, char *b);
 
 /* test if b end with a */
 bool endWith (char *a, char *b);
@@ -25,13 +25,13 @@ bool endWith (char *a, char *b);
 /* test if b end with a ignoring case
  * a can use min char, '.' (a[i] = a[i] | 32)
  */
-bool endWithIgnoreCase (char *amin, char *b, int lb);
+bool endWithIgnoreCase (const char *amin, char *b, int lb);
 
 /* tests if b contains a */
 bool caseContain (char *a, char *b);
 
 /* create a copy of a string */
-char *newString (char *arg);
+char *newString (const char *arg);
 
 /* Read a whole file
  */

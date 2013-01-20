@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <sys/types.h>
 
-#include <adns.h>
+#include "adns.h"
 
 #include "options.h"
 

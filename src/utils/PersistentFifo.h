@@ -59,7 +59,7 @@ class PersistentFifo {
 
     public:
         /* Specific constructor */
-        PersistentFifo (bool reload, char *baseName);
+        PersistentFifo (bool reload, const char *baseName);
 
         /* Destructor */
         ~PersistentFifo ();

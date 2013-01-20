@@ -12,15 +12,14 @@ MAIN-OBJ:=crawler.o main.o
 
 ABS-UTILS-OBJ:=utils/string.o utils/debug.o utils/url.o \
     utils/connexion.o utils/text.o utils/histogram.o \
-    utils/PersistentFifo.o utils/hashDup.o \
-    utils/mypthread.o
+    utils/PersistentFifo.o utils/hashDup.o utils/mypthread.o
 ABS-INTERF-OBJ:=interf/useroutput.o interf/output.o
 ABS-FETCH-OBJ:=fetch/site.o fetch/sequencer.o fetch/hashTable.o \
     fetch/checker.o fetch/file.o fetch/fetchOpen.o fetch/fetchPipe.o
 ABS-MAIN-OBJ:=$(MAIN-OBJ)
 
 CFLAGS:=-O3 -Wall -D_REENTRANT
-CXXFLAGS:= -Wno-deprecated -Wall -O3 -D_REENTRANT -I- -I$(BASEDIR) -I$(ADNSDIR)
+CXXFLAGS:= -Wno-deprecated -Wall -O3 -D_REENTRANT -iquote$(BASEDIR) -iquote$(ADNSDIR)
 RM:=rm -f
 
 first: all

@@ -587,7 +587,7 @@ void html::parseComment() {
 /** Try to understand this tag */
 void html::parseTag () {
     skipSpace();
-    char *param=NULL; // what parameter are we looking for
+    const char *param=NULL; // what parameter are we looking for
     int action=-1;
     // read the name of the tag
     if (thisCharIs(0, 'a')) { // a href

@@ -27,7 +27,7 @@ using namespace std;
  * return 0 on success, 1 otherwise
  * Don't work on non-blocking fds...
  */
-int ecrire (int fd, char *buf) {
+int ecrire (int fd, const char *buf) {
     int pos = 0;
     int count = strlen(buf);
     while (pos < count) {

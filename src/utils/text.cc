@@ -27,7 +27,7 @@ char lowerCase (char a) {
 
 /* test if b starts with a
  */
-bool startWith (char *a, char *b) {
+bool startWith (const char *a, char *b) {
     int i=0;
     while (a[i] != 0) {
         if (a[i] != b[i]) return false;
@@ -56,7 +56,7 @@ bool robotsMatch (char *a, char *b) {
 
 /* test if b starts with a ignoring case
  */
-bool startWithIgnoreCase (char *amin, char *b) {
+bool startWithIgnoreCase (const char *amin, char *b) {
     int i=0;
     while (amin[i] != 0) {
         if (amin[i] != (b[i]|32)) return false;
@@ -76,7 +76,7 @@ bool endWith (char *a, char *b) {
 /* test if b end with a ignoring case
  * a can use min char, '.' (a[i] = a[i] | 32)
  */
-bool endWithIgnoreCase (char *amin, char *b, int lb) {
+bool endWithIgnoreCase (const char *amin, char *b, int lb) {
     int la = strlen(amin);
     if (la <= lb) {
         int i;
@@ -107,7 +107,7 @@ bool caseContain (char *a, char *b) {
 
 /* create a copy of a string
  */
-char *newString (char *arg) {
+char *newString (const char *arg) {
     char *res = new char[strlen(arg) + 1];
     strcpy(res, arg);
     return res;

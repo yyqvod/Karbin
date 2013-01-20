@@ -9,7 +9,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <string.h>
-#include <adns.h>
+#include "adns.h"
 #include <netdb.h>
 #include <sys/socket.h>
 #include <string.h>
@@ -83,7 +83,7 @@ int crawler::IPUrl = 0;
  * Everything is read from the config file (larbin.conf by default)
  */
 crawler::crawler (int argc, char *argv[]) {
-    char *configFile = "larbin.conf";
+    char *configFile = (char *)"larbin.conf";
 #ifdef RELOAD
     bool reload = true;
 #else
@@ -112,8 +112,8 @@ crawler::crawler (int argc, char *argv[]) {
     // Standard values
     waitDuration = 60;
     depthInSite = 5;
-    userAgent = "larbin";
-    sender = "larbin@unspecified.mail";
+    userAgent = (char *)"larbin";
+    sender = (char *)"larbin@unspecified.mail";
     nb_conn = 20;
     dnsConn = 3;
     proxyAddr = NULL;

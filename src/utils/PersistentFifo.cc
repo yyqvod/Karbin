@@ -17,7 +17,7 @@
 
 using namespace std;
 
-PersistentFifo::PersistentFifo (bool reload, char *baseName) {
+PersistentFifo::PersistentFifo (bool reload, const char *baseName) {
     fileNameLength = strlen(baseName)+5;
     fileName = new char[fileNameLength+2];
     strcpy(fileName, baseName);
@@ -186,8 +186,8 @@ char *PersistentFifo::readLine () {
     char *posn = strchr(buf + bufPos, '\n');
     while (posn == NULL) {
         if (!(bufEnd - bufPos < maxUrlSize + 40 + maxCookieSize)) {
-            printf(fileName);
-            printf(buf+bufPos);
+            printf("%s\n", fileName);
+            printf("%s\n", buf+bufPos);
         }
         if (bufPos*2 > BUF_SIZE) {
             bufEnd -= bufPos;

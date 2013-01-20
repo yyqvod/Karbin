@@ -29,9 +29,9 @@ class LarbinString {
         // append a char
         void addChar (char c);
         // append a char *
-        void addString (char *s);
+        void addString (const char *s);
         // append a buffer
-        void addBuffer (char *s, uint len);
+        void addBuffer (const char *s, uint len);
         // length of this string
         inline uint getLength () { return pos; };
         // get a char of this string

@@ -12,7 +12,7 @@
 #include <sys/socket.h>
 #include <sys/poll.h>
 
-#include <adns.h>
+#include "adns.h"
 
 #include "fetch/file.h"
 #include "fetch/hashTable.h"
