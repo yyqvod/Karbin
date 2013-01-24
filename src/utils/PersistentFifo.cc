@@ -17,7 +17,7 @@
 
 using namespace std;
 
-PersistentFifo::PersistentFifo (bool reload, const char *baseName) {
+PersistentFifo::PersistentFifo (bool reload, const char *baseName, hashTable *seen) {
     fileNameLength = strlen(baseName)+5;
     fileName = new char[fileNameLength+2];
     strcpy(fileName, baseName);
@@ -25,6 +25,7 @@ PersistentFifo::PersistentFifo (bool reload, const char *baseName) {
     outbufPos = 0;
     bufPos = 0;
     bufEnd = 0;
+    hashSeen = seen;
     mypthread_mutex_init (&lock, NULL);
     if (reload) {
         DIR *dir = opendir(".");
@@ -169,10 +170,7 @@ void PersistentFifo::updateWrite () {
         makeName(++fin);
         wfds = creat(fileName, S_IRUSR | S_IWUSR);
 #ifdef RELOAD
-//        crawler::seen->save();
-#ifdef NO_DUP
-//        crawler::hDuplicate->save();
-#endif
+        hashSeen->save();
 #endif
     }
 }

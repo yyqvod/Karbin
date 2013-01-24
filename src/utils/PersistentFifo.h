@@ -21,6 +21,8 @@
 #include "utils/connexion.h"
 #include "utils/mypthread.h"
 
+class hashTable;
+
 class PersistentFifo {
     protected:
         uint in, out;
@@ -31,6 +33,8 @@ class PersistentFifo {
         int fin, fout;
         // name of files
         uint fileNameLength;
+        //global hash table
+        hashTable *hashSeen;
         char *fileName;
         // Make fileName fit with this number
         void makeName (uint nb);
@@ -59,7 +63,7 @@ class PersistentFifo {
 
     public:
         /* Specific constructor */
-        PersistentFifo (bool reload, const char *baseName);
+        PersistentFifo (bool reload, const char *baseName, hashTable *seen);
 
         /* Destructor */
         ~PersistentFifo ();

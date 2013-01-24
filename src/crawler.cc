@@ -33,52 +33,6 @@ using namespace std;
 // Struct crawler
 ///////////////////////////////////////////////////////////
 
-// define all the static variables
-//time_t crawler::now;
-//hashTable *crawler::seen;
-//#ifdef NO_DUP
-//hashDup *crawler::hDuplicate;
-//#endif // NO_DUP
-//SyncFifo<url> *crawler::URLsPriority;
-//SyncFifo<url> *crawler::URLsPriorityWait;
-//uint crawler::readPriorityWait=0;
-//PersistentFifo *crawler::URLsDisk;
-//PersistentFifo *crawler::URLsDiskWait;
-//uint crawler::readWait=0;
-//IPSite *crawler::IPSiteList;
-//NamedSite *crawler::namedSiteList;
-//Fifo<IPSite> *crawler::okSites;
-//Fifo<NamedSite> *crawler::dnsSites;
-//Connexion *crawler::connexions;
-//adns_state crawler::ads;
-//uint crawler::nbDnsCalls = 0;
-//ConstantSizedFifo<Connexion> *crawler::freeConns;
-//#ifdef THREAD_OUTPUT
-//ConstantSizedFifo<Connexion> *crawler::userConns;
-//#endif
-//Interval *crawler::inter;
-//int8_t crawler::depthInSite;
-//bool crawler::externalLinks = true;
-//time_t crawler::waitDuration;
-//char *crawler::userAgent;
-//char *crawler::sender;
-//char *crawler::headers;
-//char *crawler::headersRobots;
-//sockaddr_in *crawler::proxyAddr;
-//Vector<char> *crawler::domains;
-//Vector<char> crawler::forbExt;
-//uint crawler::nb_conn;
-//uint crawler::dnsConn;
-//struct pollfd *crawler::pollfds;
-//uint crawler::posPoll;
-//uint crawler::sizePoll;
-//short *crawler::ansPoll;
-//int crawler::maxFds;
-//#ifdef MAXBANDWIDTH
-//long int crawler::remainBand = MAXBANDWIDTH;
-//#endif // MAXBANDWIDTH
-//int crawler::IPUrl = 0;
-
 /** Constructor : initialize almost everything
  * Everything is read from the config file (larbin.conf by default)
  */
@@ -130,14 +84,14 @@ Crawler::Crawler (int argc, char *argv[]) {
     proxyAddr = NULL;
     domains = NULL;
     // FIFOs
-    URLsDisk = new PersistentFifo(reload, fifoFile);
-    URLsDiskWait = new PersistentFifo(reload, fifoFileWait);
+    seen = new hashTable(!reload);
+    URLsDisk = new PersistentFifo(reload, fifoFile, seen);
+    URLsDiskWait = new PersistentFifo(reload, fifoFileWait, seen);
     URLsPriority = new SyncFifo<url>;
     URLsPriorityWait = new SyncFifo<url>;
     inter = new Interval(ramUrls);
     okSites = new Fifo<IPSite>(2000);
     dnsSites = new Fifo<NamedSite>(2000);
-    seen = new hashTable(!reload);
 
     rawMemory = operator new(namedSiteListSize * sizeof(NamedSite));
     namedSiteList = reinterpret_cast<NamedSite *>(rawMemory);
@@ -203,7 +157,6 @@ Crawler::Crawler (int argc, char *argv[]) {
         adns_initflags (adns_if_nosigpipe | adns_if_debug); //adns_if_noerrprint
     adns_init(&ads, flags, NULL);
     // call init functions of all modules
-    initSpecific();
     initOutput();
     initSite();
     // let's ignore SIGPIPE

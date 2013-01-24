@@ -23,7 +23,6 @@
 #include "utils/mypthread.h"
 
 #include "utils/debug.h"
-#include "utils/histogram.h"
 
 #define MAXCRAWLER  20
 

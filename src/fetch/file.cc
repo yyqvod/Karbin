@@ -220,38 +220,6 @@ void robots::parseRobots () {
  * implementation of html
  *************************************/
 
-
-/////////////////////////////////////////
-#ifdef SPECIFICSEARCH
-
-#include "fetch/specbuf.cc"
-
-#define _newSpec() if (state==SPECIFIC) newSpec()
-#define _destructSpec() if (state==SPECIFIC) destructSpec()
-#define _endOfInput() if (state==SPECIFIC) return endOfInput()
-#define _getContent() \
-    if (state==SPECIFIC) return getContent(); \
-else return contentStart
-#define _getSize() \
-    if (state==SPECIFIC) return getSize(); \
-else return (buffer + pos - contentStart)
-
-///////////////////////////////////////
-#else // not a SPECIFICSEARCH
-
-void initSpecific () { }
-
-#define constrSpec() ((void) 0)
-#define _newSpec() ((void) 0)
-#define pipeSpec() 0
-#define _endOfInput() ((void) 0)
-#define _destructSpec() ((void) 0)
-#define _getContent() return contentStart
-#define _getSize() return (buffer + pos - contentStart)
-
-#endif // SPECIFICSEARCH
-/////////////////////////////////////////
-
 #if CGILEVEL >= 1
 #define notCgiChar(c) (c!='?' && c!='=' && c!='*')
 #else
@@ -267,7 +235,6 @@ html::html (url *here, Connexion *conn, Crawler *aCraw) : file(conn) {
     pCrawler = aCraw;
     state = ANSWER;
     isInteresting = false;
-    constrSpec();
     pages();
     isRobots = false;
 }
@@ -275,7 +242,6 @@ html::html (url *here, Connexion *conn, Crawler *aCraw) : file(conn) {
 /** Destructor
  */
 html::~html () {
-    _destructSpec();
     delPars();
     delete here;
     delete base;
@@ -283,11 +249,11 @@ html::~html () {
 
 /* get the content of the page */
 char *html::getPage () {
-    _getContent();
+    return contentStart;
 }
 
 int html::getLength () {
-    _getSize();
+    return buffer + pos - contentStart;
 }
 
 /* manage a new url : verify and send it */
@@ -356,7 +322,6 @@ int html::inputHeaders (int size) {
                 }
                 break;
             case SPECIFIC:
-                return pipeSpec();
             default:
                 return 0;
         }
@@ -404,7 +369,6 @@ int html::parseHeader () {
 #endif // SPECIFICSEARCH
         contentStart = posParse + 1;
         *(posParse-1) = 0;
-        _newSpec();
     } else {
         *posParse = 0;
         here->addCookie(area);
@@ -522,7 +486,6 @@ int html::endInput () {
         return 1;
     }
     buffer[pos] = 0;
-    _endOfInput();
     // now parse the html
     parseHtml();
     return 0;
