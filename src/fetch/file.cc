@@ -43,13 +43,15 @@ using namespace std;
  * implementation of file
  ***********************************/
 
-file::file (Connexion *conn) {
+file::file(Connexion *conn)
+{
     buffer = conn->buffer;
     pos = 0;
     posParse = buffer;
 }
 
-file::~file () {
+file::~file()
+{
 }
 
 /***********************************
@@ -58,7 +60,8 @@ file::~file () {
 
 /** Constructor
  */
-robots::robots (NamedSite *server, Connexion *conn) : file(conn) {
+robots::robots(NamedSite *server, Connexion *conn) : file(conn)
+{
     newPars();
     this->server = server;
     answerCode = false;
@@ -67,7 +70,8 @@ robots::robots (NamedSite *server, Connexion *conn) : file(conn) {
 
 /** Destructor
  */
-robots::~robots () {
+robots::~robots()
+{
     delPars();
     // server is not deleted on purpose
     // it belongs to someone else
@@ -75,13 +79,15 @@ robots::~robots () {
 
 /** we get some more chars of this file
  */
-int robots::endInput () {
+int robots::endInput()
+{
     return 0;
 }
 
 /** input and parse headers
  */
-int robots::inputHeaders (int size) {
+int robots::inputHeaders(int size)
+{
     pos += size;
     if (!answerCode && pos > 12) {
         if (buffer[9] == '2') {
@@ -102,7 +108,8 @@ int robots::inputHeaders (int size) {
 
 /** parse the robots.txt
  */
-void robots::parse (bool isError) {
+void robots::parse(bool isError)
+{
     if (answerCode && parseHeaders()) {
         siteRobots();
         buffer[pos] = 0;
@@ -120,7 +127,8 @@ void robots::parse (bool isError) {
 /** test http headers
  * return true if OK, false otherwise
  */
-bool robots::parseHeaders () {
+bool robots::parseHeaders()
+{
     for(posParse = buffer+9; posParse[3] != 0; posParse++) {
         if ((posParse[0] == '\n' && 
                     (posParse[1] == '\n'
@@ -136,7 +144,8 @@ bool robots::parseHeaders () {
 
 /** try to understand the file
  */
-void robots::parseRobots () {
+void robots::parseRobots()
+{
     robotsOK();
 #ifndef NOSTATS
     bool goodfile = true;
@@ -228,7 +237,8 @@ void robots::parseRobots () {
 
 /** Constructor
  */
-html::html (url *here, Connexion *conn, Crawler *aCraw) : file(conn) {
+html::html(url *here, Connexion *conn, Crawler *aCraw) : file(conn)
+{
     newPars();
     this->here = here;
     base = here->giveBase();
@@ -241,23 +251,27 @@ html::html (url *here, Connexion *conn, Crawler *aCraw) : file(conn) {
 
 /** Destructor
  */
-html::~html () {
+html::~html()
+{
     delPars();
     delete here;
     delete base;
 }
 
 /* get the content of the page */
-char *html::getPage () {
+char *html::getPage()
+{
     return contentStart;
 }
 
-int html::getLength () {
+int html::getLength()
+{
     return buffer + pos - contentStart;
 }
 
 /* manage a new url : verify and send it */
-void html::manageUrl (url *nouv, bool isRedir) {
+void html::manageUrl(url *nouv, bool isRedir)
+{
     if (nouv->isValid()
             && filter1(nouv->getHost(), nouv->getFile(), pCrawler)
             && (pCrawler->externalLinks || isRedir
@@ -286,7 +300,8 @@ void html::manageUrl (url *nouv, bool isRedir) {
 /** a string is arriving, treat it only up to the end of headers
  * return 0 usually, 1 if no more input and set errno accordingly
  */
-int html::inputHeaders (int size) {
+int html::inputHeaders(int size)
+{
     pos += size;
     buffer[pos] = 0;
     char *posn;
@@ -330,7 +345,8 @@ int html::inputHeaders (int size) {
 }
 
 /** parse the answer code line */
-int html::parseCmdline () {
+int html::parseCmdline()
+{
     if (posParse - buffer >= 12) {
         switch (buffer[9]) {
             case '2':
@@ -353,7 +369,8 @@ int html::parseCmdline () {
 /** parse a line of header
  * @return 0 if OK, 1 if we don't want to read the file
  */
-int html::parseHeader () {
+int html::parseHeader()
+{
     if (posParse - area < 2) {
         // end of http headers
 #ifndef FOLLOW_LINKS
@@ -396,7 +413,8 @@ int html::parseHeader () {
 #define checkType() errorType()
 #endif
 
-int html::verifType () {
+int html::verifType()
+{
     if (startWithIgnoreCase("content-type: ", area)) {
         // Let's read the type of this doc
         if (!startWithIgnoreCase("text/html", area+14)) {
@@ -419,7 +437,8 @@ int html::verifType () {
  * parse content-length
  * return 1 (and set errno) if too long file, 0 otherwise
  */
-int html::verifLength () {
+int html::verifLength()
+{
 #ifndef SPECIFICSEARCH
     if (startWithIgnoreCase("content-length: ", area)) {
         int len = 0;
@@ -440,7 +459,8 @@ int html::verifLength () {
 /** parse a line of header (ans 30X) => just look for location
  * @return 0 if OK, 1 if we don't want to read the file
  */
-int html::parseHeader30X () {
+int html::parseHeader30X()
+{
     if (posParse - area < 2) {
         // end of http headers without location => err40X
         errno = err40X;
@@ -476,7 +496,8 @@ int html::parseHeader30X () {
 /** file download is complete, parse the file (headers already done)
  * return 0 usually, 1 if there was an error
  */
-int html::endInput () {
+int html::endInput()
+{
     if (state <= HEADERS) {
         errno = earlyStop;
         return 1;
@@ -492,7 +513,8 @@ int html::endInput () {
 }
 
 /* parse an html page */
-void html::parseHtml () {
+void html::parseHtml()
+{
     while ((posParse=strchr(posParse, '<')) != NULL) {
         if (posParse[1] == '!') {
             if (posParse[2] == '-' && posParse[3] == '-') {
@@ -510,7 +532,8 @@ void html::parseHtml () {
 }
 
 /* skip a comment */
-void html::parseComment() {
+void html::parseComment()
+{
     while ((posParse=strchr(posParse, '-')) != NULL) {
         if (posParse[1] == '-' && posParse[2] == '>') {
             posParse += 3;
@@ -545,7 +568,8 @@ void html::parseComment() {
 }
 
 /** Try to understand this tag */
-void html::parseTag () {
+void html::parseTag()
+{
     skipSpace();
     const char *param=NULL; // what parameter are we looking for
     int action=-1;
@@ -590,7 +614,8 @@ void html::parseTag () {
 }
 
 /** read the content of an interesting tag */
-void html::parseContent (int action) {
+void html::parseContent(int action)
+{
     posParse++;
     while (*posParse==' ' || *posParse=='=') posParse++;
     if (*posParse=='\"' || *posParse=='\'') posParse++;

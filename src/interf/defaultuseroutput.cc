@@ -20,7 +20,8 @@ using namespace std;
 /** A page has been loaded successfully
  * @param page the page that has been fetched
  */
-void loaded (html *page) {
+void loaded(html *page)
+{
     // Here should be the code for managing everything
     // page->getHeaders() gives a char* containing the http headers
     // page->getPage() gives a char* containing the page itself
@@ -38,7 +39,8 @@ void loaded (html *page) {
  * @param u the URL of the doc
  * @param reason reason of the fail
  */
-void failure (url *u, FetchError reason) {
+void failure(url *u, FetchError reason)
+{
     // Here should be the code for managing everything
 #ifdef BIGSTATS
     cout << "fetched failed (" << (int) reason << ") : ";
@@ -48,8 +50,8 @@ void failure (url *u, FetchError reason) {
 
 /** initialisation function
  */
-void initUserOutput () {
-
+void initUserOutput()
+{
 }
 
 /** stats, called in particular by the webserver
@@ -58,6 +60,7 @@ void initUserOutput () {
  * to use mutex, because incoherence in the webserver is not as critical
  * as efficiency
  */
-void outputStats(int fds) {
+void outputStats(int fds)
+{
     ecrire(fds, "Nothing to declare");
 }

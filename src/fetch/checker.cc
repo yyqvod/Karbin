@@ -28,7 +28,7 @@ using namespace std;
  * if not send it
  * @param u the url to check
  */
-void check (url *u, Crawler *pCrawler)
+void check(url *u, Crawler *pCrawler)
 {
     if (pCrawler->seen->testSet(u)) {
         hashUrls();  // stat
@@ -55,7 +55,7 @@ void check (url *u, Crawler *pCrawler)
 /** Check the extension of an url
  * @return true if it might be interesting, false otherwise
  */
-bool filter1 (char *host, char *file, Crawler *pCrawler)
+bool filter1(char *host, char *file, Crawler *pCrawler)
 {
     int i=0;
     if (pCrawler->domains != NULL) {

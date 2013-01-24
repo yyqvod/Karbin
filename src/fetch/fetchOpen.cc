@@ -21,7 +21,8 @@ using namespace std;
  * Never block (only opens sockets on already known sites)
  * work inside the main thread
  */
-void fetchOpen (Crawler *pCrawler) {
+void fetchOpen(Crawler *pCrawler)
+{
     static time_t next_call = 0;
     if (pCrawler->now < next_call) { // too early to come back
         return;
@@ -41,7 +42,8 @@ void fetchOpen (Crawler *pCrawler) {
 /* Opens sockets
  * this function perform dns calls, using adns
  */
-void fetchDns (Crawler *pCrawler) {
+void fetchDns(Crawler *pCrawler)
+{
     // Submit queries
     while (pCrawler->nbDnsCalls<pCrawler->dnsConn
             && pCrawler->freeConns->isNonEmpty()

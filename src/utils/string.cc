@@ -14,7 +14,8 @@
 using namespace std;
 
 // Constructor
-LarbinString::LarbinString (uint size) {
+LarbinString::LarbinString(uint size)
+{
     chaine = new char[size];
     this->size = size;
     pos = 0;
@@ -22,12 +23,14 @@ LarbinString::LarbinString (uint size) {
 }
 
 // Destructor
-LarbinString::~LarbinString () {
+LarbinString::~LarbinString()
+{
     delete [] chaine;
 }
 
 // Recycle this string
-void LarbinString::recycle (uint size) {
+void LarbinString::recycle(uint size)
+{
     if (this->size > size) {
         delete [] chaine;
         chaine = new char[size];
@@ -38,19 +41,22 @@ void LarbinString::recycle (uint size) {
 }
 
 // get the char *
-char *LarbinString::getString () {
+char *LarbinString::getString()
+{
     return chaine;
 }
 
 /** give a new string (allocate a new one
  * the caller will have to delete it
  */
-char *LarbinString::giveString () {
+char *LarbinString::giveString()
+{
     return newString(chaine);
 }
 
 // append a char
-void LarbinString::addChar (char c) {
+void LarbinString::addChar(char c)
+{
     chaine[pos] = c;
     pos++;
     if (pos >= size) {
@@ -64,13 +70,15 @@ void LarbinString::addChar (char c) {
 }
 
 // append a char *
-void LarbinString::addString (const char *s) {
+void LarbinString::addString(const char *s)
+{
     uint len = strlen(s);
     addBuffer(s, len);
 }
 
 // append a buffer
-void LarbinString::addBuffer (const char *s, uint len) {
+void LarbinString::addBuffer(const char *s, uint len)
+{
     if (size <= pos + len) {
         size *= 2;
         if (size <= pos + len) size = pos + len + 1;
@@ -85,6 +93,7 @@ void LarbinString::addBuffer (const char *s, uint len) {
 }
 
 // change a char
-void LarbinString::setChar (uint i, char c) {
+void LarbinString::setChar(uint i, char c)
+{
     chaine[i] = c;
 }

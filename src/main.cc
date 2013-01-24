@@ -26,13 +26,15 @@
 
 #define MAXCRAWLER  20
 
-static void cron (Crawler *pCrawler);
+static void cron(Crawler *pCrawler);
+static void startCrawler(void *pData);
 
 ///////////////////////////////////////////////////////////
 
 // wait to limit bandwidth usage
 #ifdef MAXBANDWIDTH
-static void waitBandwidth (time_t *old, Crawler *pCrawler) {
+static void waitBandwidth(time_t *old, Crawler *pCrawler)
+{
     while (pCrawler->remainBand < 0) {
         poll(NULL, 0, 10);
         pCrawler->now = time(NULL);
@@ -52,7 +54,7 @@ static uint count = 0;
 
 ///////////////////////////////////////////////////////////
 // If this thread terminates, the whole program exits
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     // create all the structures
     Crawler crawler(argc, argv);
@@ -84,8 +86,13 @@ int main (int argc, char *argv[])
     }
 }
 
+static void startCrawler(void *pData)
+{
+}
+
 // a lot of stats and profiling things
-static void cron (Crawler *pCrawler) {
+static void cron(Crawler *pCrawler)
+{
     // shall we stop
 #ifdef EXIT_AT_END
     if (pCrawler->URLsDisk->getLength() == 0

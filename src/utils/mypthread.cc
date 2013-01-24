@@ -12,7 +12,8 @@ using namespace std;
 /* Launch a new thread
  * return 0 in case of success
  */
-void startThread (StartFun run, void *arg) {
+void startThread (StartFun run, void *arg)
+{
     pthread_t t;
     pthread_attr_t attr;
     if (pthread_attr_init(&attr) != 0

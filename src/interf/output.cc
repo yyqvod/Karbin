@@ -23,7 +23,8 @@ using namespace std;
  * @param u the URL of the doc
  * @param reason reason of the fail
  */
-void fetchFail (url *u, FetchError err, bool interesting=false) {
+void fetchFail(url *u, FetchError err, bool interesting=false)
+{
 #ifdef SPECIFICSEARCH
     if (interesting
             || (privilegedExts[0] != NULL && matchPrivExt(u->getFile()))) {
@@ -37,7 +38,8 @@ void fetchFail (url *u, FetchError err, bool interesting=false) {
 /** It's over with this file
  * report the situation ! (and make some stats)
  */
-void endOfLoad (html *parser, FetchError err) {
+void endOfLoad(html *parser, FetchError err)
+{
     answers(err);
     switch (err) {
         case success:
@@ -69,7 +71,8 @@ void endOfLoad (html *parser, FetchError err) {
 //
 #else // THREAD_OUTPUT not defined
 
-void initOutput () {
+void initOutput()
+{
     initUserOutput();
 }
 

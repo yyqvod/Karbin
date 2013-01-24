@@ -17,7 +17,8 @@
 
 using namespace std;
 
-PersistentFifo::PersistentFifo (bool reload, const char *baseName, hashTable *seen) {
+PersistentFifo::PersistentFifo (bool reload, const char *baseName, hashTable *seen)
+{
     fileNameLength = strlen(baseName)+5;
     fileName = new char[fileNameLength+2];
     strcpy(fileName, baseName);
@@ -86,14 +87,16 @@ PersistentFifo::PersistentFifo (bool reload, const char *baseName, hashTable *se
     }
 }
 
-PersistentFifo::~PersistentFifo () {
+PersistentFifo::~PersistentFifo()
+{
     //delete [] filename; 
-    mypthread_mutex_destroy (&lock);
+    mypthread_mutex_destroy(&lock);
     close(rfds);
     close(wfds);
 }
 
-url *PersistentFifo::tryGet () {
+url *PersistentFifo::tryGet()
+{
     url *tmp = NULL;
     mypthread_mutex_lock(&lock);
     if (in != out) {
@@ -107,7 +110,8 @@ url *PersistentFifo::tryGet () {
     return tmp;
 }
 
-url *PersistentFifo::get () {
+url *PersistentFifo::get()
+{
     mypthread_mutex_lock(&lock);
     char *line = readLine();
     url *res = new url(line);
@@ -120,7 +124,8 @@ url *PersistentFifo::get () {
 /** Put something in the fifo
  * The objet is then deleted
  */
-void PersistentFifo::put (url *obj) {
+void PersistentFifo::put(url *obj)
+{
     mypthread_mutex_lock(&lock);
     char *s = obj->serialize(); // statically allocated string
     writeUrl(s);
@@ -130,18 +135,21 @@ void PersistentFifo::put (url *obj) {
     delete obj;
 }
 
-int PersistentFifo::getLength () {
+int PersistentFifo::getLength()
+{
     return in - out;
 }
 
-void PersistentFifo::makeName (uint nb) {
+void PersistentFifo::makeName(uint nb)
+{
     for (uint i=fileNameLength; i>=fileNameLength-5; i--) {
         fileName[i] = (nb % 10) + '0';
         nb /= 10;
     }
 }
 
-int PersistentFifo::getNumber (char *file) {
+int PersistentFifo::getNumber(char *file)
+{
     uint len = strlen(file);
     int res = 0;
     for (uint i=len-6; i<=len-1; i++) {
@@ -150,7 +158,8 @@ int PersistentFifo::getNumber (char *file) {
     return res;
 }
 
-void PersistentFifo::updateRead () {
+void PersistentFifo::updateRead()
+{
     if ((out % urlByFile) == 0) {
         close(rfds);
         makeName(fout);
@@ -163,7 +172,8 @@ void PersistentFifo::updateRead () {
     }
 }
 
-void PersistentFifo::updateWrite () {
+void PersistentFifo::updateWrite()
+{
     if ((in % urlByFile) == 0) {
         flushOut();
         close(wfds);
@@ -178,7 +188,8 @@ void PersistentFifo::updateWrite () {
 /* read a line from the file
  * uses a buffer
  */
-char *PersistentFifo::readLine () {
+char *PersistentFifo::readLine()
+{
     if (bufPos == bufEnd) {
         bufPos = 0; bufEnd = 0; buf[0] = 0;
     }
@@ -228,7 +239,8 @@ char *PersistentFifo::readLine () {
 }
 
 // write an url in the out file (buffered write)
-void PersistentFifo::writeUrl (char *s) {
+void PersistentFifo::writeUrl(char *s)
+{
     size_t len = strlen(s);
     assert(len < maxUrlSize + 40 + maxCookieSize);
     if (outbufPos + len < BUF_SIZE) {
@@ -243,7 +255,8 @@ void PersistentFifo::writeUrl (char *s) {
 }
 
 // Flush the out Buffer in the outFile
-void PersistentFifo::flushOut () {
+void PersistentFifo::flushOut()
+{
     ecrireBuff (wfds, outbuf, outbufPos);
     outbufPos = 0;
 }

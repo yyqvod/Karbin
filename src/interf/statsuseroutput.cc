@@ -33,7 +33,8 @@ static double totalbytes = 0;
 /** A page has been loaded successfully
  * @param page the page that has been fetched
  */
-void loaded (html *page) {
+void loaded(html *page)
+{
     uint32_t l = page->getLength();
     int t = l / taille;
     if (t >= nb) {
@@ -51,12 +52,14 @@ void loaded (html *page) {
  * @param u the URL of the doc
  * @param reason reason of the fail
  */
-void failure (url *u, FetchError reason) {
+void failure(url *u, FetchError reason)
+{
 }
 
 /** initialisation function
  */
-void initUserOutput () {
+void initUserOutput()
+{
     for (int i=0; i<nb; i++) {
         tabs[i] = 0;
         tabb[i] = 0;
@@ -69,7 +72,8 @@ void initUserOutput () {
  * to use mutex, because incoherence in the webserver is not as critical
  * as efficiency
  */
-static void dessine(int fds, double *tab, double *maxi) {
+static void dessine(int fds, double *tab, double *maxi)
+{
     for (int i=0; i<nb; i++) {
         ecrire(fds, "|");
         int n = (int) ((tab[i] * larg) / (*maxi+1));
@@ -78,7 +82,8 @@ static void dessine(int fds, double *tab, double *maxi) {
     }
 }
 
-void outputStats(int fds) {
+void outputStats(int fds)
+{
     ecrire(fds, "Stats for ");
     ecrireInt(fds, totalpages);
     ecrire(fds, " pages.\nMean size of a page : ");

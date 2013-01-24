@@ -19,7 +19,8 @@
 using namespace std;
 
 /* constructor */
-hashDup::hashDup (ssize_t size, char *init, bool scratch) {
+hashDup::hashDup(ssize_t size, char *init, bool scratch)
+{
     this->size = size;
     file = init;
     table = new char[size / 8];
@@ -51,7 +52,8 @@ hashDup::hashDup (ssize_t size, char *init, bool scratch) {
 }
 
 /* destructor */
-hashDup::~hashDup () {
+hashDup::~hashDup()
+{
     delete [] table;
 }
 
@@ -59,7 +61,8 @@ hashDup::~hashDup () {
  * return false if it was already there
  * return true if it was not (ie it is new)
  */
-bool hashDup::testSet (char *doc) {
+bool hashDup::testSet(char *doc)
+{
     unsigned int code = 0;
     char c;
     for (uint i=0; (c=doc[i])!=0; i++) {
@@ -74,7 +77,8 @@ bool hashDup::testSet (char *doc) {
 }
 
 /* save in a file */
-void hashDup::save () {
+void hashDup::save()
+{
     int fds = creat(file, 00600);
     if (fds >= 0) {
         ecrireBuff(fds, table, size/8);

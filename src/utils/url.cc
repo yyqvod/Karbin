@@ -28,7 +28,8 @@
 #endif // COOKIES
 
 /* small functions used later */
-static uint siteHashCode (char *host) {
+static uint siteHashCode(char *host)
+{
     uint h=0;
     uint i=0;
     while (host[i] != 0) {
@@ -40,7 +41,8 @@ static uint siteHashCode (char *host) {
 
 /* return the int with correspond to a char
  * -1 if not an hexa char */
-static int int_of_hexa (char c) {
+static int int_of_hexa(char c)
+{
     if (c >= '0' && c <= '9')
         return (c - '0');
     else if (c >= 'a' && c <= 'f')
@@ -54,7 +56,8 @@ static int int_of_hexa (char c) {
 /* normalize a file name : also called by robots.txt parser
  * return true if it is ok, false otherwise (cgi-bin)
  */
-bool fileNormalize (char *file) {
+bool fileNormalize(char *file)
+{
     int i=0;
     while (file[i] != 0 && file[i] != '#') {
         if (file[i] == '/') {
@@ -142,7 +145,8 @@ bool fileNormalize (char *file) {
 /**************************************/
 
 /* Constructor : Parses an url */
-url::url (char *u, int8_t depth, url *base) {
+url::url(char *u, int8_t depth, url *base)
+{
     newUrl();
     this->depth = depth;
     host = NULL;
@@ -174,7 +178,8 @@ url::url (char *u, int8_t depth, url *base) {
 }
 
 /* constructor used by input */
-url::url (char *line,  int8_t depth) {
+url::url(char *line,  int8_t depth)
+{
     newUrl();
     this->depth = depth;
     host = NULL;
@@ -204,7 +209,8 @@ url::url (char *line,  int8_t depth) {
 
 /* Constructor : read the url from a file (cf serialize)
  */
-url::url (char *line) {
+url::url(char *line)
+{
     newUrl();
     int i=0;
     // Read depth
@@ -254,7 +260,8 @@ url::url (char *line) {
 }
 
 /* constructor used by giveBase */
-url::url (char *host, uint port, char *file) {
+url::url(char *host, uint port, char *file)
+{
     newUrl();
     initCookie();
     this->host = host;
@@ -263,7 +270,8 @@ url::url (char *host, uint port, char *file) {
 }
 
 /* Destructor */
-url::~url () {
+url::~url()
+{
     delUrl();
     delete [] host;
     delete [] file;
@@ -273,7 +281,8 @@ url::~url () {
 }
 
 /* Is it a valid url ? */
-bool url::isValid () {
+bool url::isValid()
+{
     if (host == NULL) return false;
     int lh = strlen(host);
     return file!=NULL && lh < maxSiteSize
@@ -281,14 +290,15 @@ bool url::isValid () {
 }
 
 /* print an URL */
-void url::print () {
+void url::print() {
     printf("http://%s:%u%s\n", host, port, file);
 }
 
 /* Set depth to max if necessary
  * try to find the ip addr
  * answer false if forbidden by robots.txt, true otherwise */
-bool url::initOK (url *from, Crawler *pCrawler) {
+bool url::initOK(url *from, Crawler *pCrawler)
+{
 #if defined(DEPTHBYSITE) || defined(COOKIES)
     if (strcmp(from->getHost(), host)) { // different site
 #ifdef DEPTHBYSITE
@@ -327,7 +337,8 @@ bool url::initOK (url *from, Crawler *pCrawler) {
 }
 
 /* return the base of the url */
-url *url::giveBase () {
+url *url::giveBase()
+{
     int i = strlen(file);
     assert (file[0] == '/');
     while (file[i] != '/') {
@@ -342,7 +353,8 @@ url *url::giveBase () {
 /** return a char * representation of the url
  * give means that you have to delete the string yourself
  */
-char *url::giveUrl () {
+char *url::giveUrl()
+{
     char *tmp;
     int i = strlen(file);
     int j = strlen(host);
@@ -367,7 +379,8 @@ char *url::giveUrl () {
  * buf must be at least of size maxUrlSize
  * returns the size of what has been written (not including '\0')
  */
-int url::writeUrl (char *buf) {
+int url::writeUrl(char *buf)
+{
     if (port == 80)
         return sprintf(buf, "http://%s%s", host, file);
     else
@@ -375,7 +388,8 @@ int url::writeUrl (char *buf) {
 }
 
 /* serialize the url for the Persistent Fifo */
-char *url::serialize () {
+char *url::serialize()
+{
     // this buffer is protected by the lock of PersFifo
     static char statstr[maxUrlSize+40+maxCookieSize];
     int pos = sprintf(statstr, "%u ", depth);
@@ -394,19 +408,22 @@ char *url::serialize () {
 }
 
 /* very thread unsafe serialisation in a static buffer */
-char *url::getUrl() {
+char *url::getUrl()
+{
     static char statstr[maxUrlSize+40];
     sprintf(statstr, "http://%s:%u%s", host, port, file);
     return statstr;
 }
 
 /* return a hashcode for the host of this url */
-uint url::hostHashCode () {
+uint url::hostHashCode()
+{
     return siteHashCode (host);
 }
 
 /* return a hashcode for this url */
-uint url::hashCode () {
+uint url::hashCode()
+{
     unsigned int h=port;
     unsigned int i=0;
     while (host[i] != 0) {
@@ -425,7 +442,8 @@ uint url::hashCode () {
  * at the end, arg must have its initial state, 
  * http:// has allready been suppressed
  */
-void url::parse (char *arg) {
+void url::parse(char *arg)
+{
     int deb = 0, fin = deb;
     // Find the end of host name (put it into lowerCase)
     while (arg[fin] != '/' && arg[fin] != ':' && arg[fin] != 0) {
@@ -461,7 +479,8 @@ void url::parse (char *arg) {
 
 /** parse a file with base
  */
-void url::parseWithBase (char *u, url *base) {
+void url::parseWithBase(char *u, url *base)
+{
     // cat filebase and file
     if (u[0] == '/') {
         file = newString(u);
@@ -484,12 +503,14 @@ void url::parseWithBase (char *u, url *base) {
 /** normalize file name
  * return true if it is ok, false otherwise (cgi-bin)
  */
-bool url::normalize (char *file) {
+bool url::normalize(char *file)
+{
     return fileNormalize(file);
 }
 
 /* Does this url starts with a protocol name */
-bool url::isProtocol (char *s) {
+bool url::isProtocol(char *s)
+{
     uint i = 0;
     while (isalnum(s[i])) {
         i++;
@@ -503,7 +524,8 @@ bool url::isProtocol (char *s) {
 cookie[maxCookieSize-1] = 0;
 
 /* see if a header contain a new cookie */
-void url::addCookie(char *header) {
+void url::addCookie(char *header)
+{
     if (startWithIgnoreCase("set-cookie: ", header)) {
         char *pos = strchr(header+12, ';');
         if (pos != NULL) {

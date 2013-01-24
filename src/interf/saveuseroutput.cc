@@ -27,7 +27,8 @@ static uint endFileName;
 /** A page has been loaded successfully, save it to disk
  * @param page the page that has been fetched
  */
-void loaded (html *page) {
+void loaded(html *page)
+{
     nbfile++;
     if (nbfile < filesPerDir) {
         int tmp = nbfile;
@@ -81,13 +82,15 @@ void loaded (html *page) {
  * @param u the URL of the doc
  * @param reason reason of the fail
  */
-void failure (url *u, FetchError reason) {
+void failure(url *u, FetchError reason)
+{
     // do nothing
 }
 
 /** initialisation function
  */
-void initUserOutput () {
+void initUserOutput()
+{
     mkdir(saveDir, S_IRWXU);
     endFileName = strlen(saveDir);
     fileName = new char[endFileName+maxUrlSize+50];
@@ -103,6 +106,7 @@ void initUserOutput () {
  * to use mutex, because incoherence in the webserver is not as critical
  * as efficiency
  */
-void outputStats(int fds) {
+void outputStats(int fds)
+{
     ecrire(fds, "Nothing to declare");
 }

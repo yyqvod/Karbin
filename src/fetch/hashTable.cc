@@ -20,7 +20,8 @@
 
 using namespace std;
 /* constructor */
-hashTable::hashTable (bool create) {
+hashTable::hashTable(bool create)
+{
     ssize_t total = hashSize/8;
     table = new char[total];
     if (create) {
@@ -52,12 +53,14 @@ hashTable::hashTable (bool create) {
 }
 
 /* destructor */
-hashTable::~hashTable () {
+hashTable::~hashTable()
+{
     delete [] table;
 }
 
 /* save the hashTable in a file */
-void hashTable::save() {
+void hashTable::save()
+{
     rename("hashtable.bak", "hashtable.old");
     int fds = creat("hashtable.bak", 00600);
     if (fds >= 0) {
@@ -71,7 +74,8 @@ void hashTable::save() {
  * return true if it has been added
  * return false if it has allready been seen
  */
-bool hashTable::test (url *U) {
+bool hashTable::test(url *U)
+{
     unsigned int code = U->hashCode();
     unsigned int pos = code / 8;
     unsigned int bits = 1 << (code % 8);
@@ -80,7 +84,8 @@ bool hashTable::test (url *U) {
 
 /* set a url as present in the hashtable
  */
-void hashTable::set (url *U) {
+void hashTable::set(url *U)
+{
     unsigned int code = U->hashCode();
     unsigned int pos = code / 8;
     unsigned int bits = 1 << (code % 8);
@@ -91,7 +96,8 @@ void hashTable::set (url *U) {
  * return true if it has been added
  * return false if it has allready been seen
  */
-bool hashTable::testSet (url *U) {
+bool hashTable::testSet(url *U)
+{
     unsigned int code = U->hashCode();
     unsigned int pos = code / 8;
     unsigned int bits = 1 << (code % 8);

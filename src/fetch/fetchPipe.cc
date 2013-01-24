@@ -27,14 +27,14 @@
 
 using namespace std;
 
-static void pipeRead (Connexion *conn, Crawler *pCrawler);
-static void pipeWrite (Connexion *conn, Crawler *pCrawler);
-static void endOfFile (Connexion *conn, Crawler *pCrawler);
+static void pipeRead(Connexion *conn, Crawler *pCrawler);
+static void pipeWrite(Connexion *conn, Crawler *pCrawler);
+static void endOfFile(Connexion *conn, Crawler *pCrawler);
 
 
 /** Check timeout
  */
-void checkTimeout (Crawler *pCrawler)
+void checkTimeout(Crawler *pCrawler)
 {
     for (uint i=0; i<pCrawler->nb_conn; i++) {
         Connexion *conn = pCrawler->connexions+i;
@@ -58,7 +58,7 @@ void checkTimeout (Crawler *pCrawler)
  * fill fd_set for next select
  * give back max fds
  */
-void checkAll (Crawler *pCrawler)
+void checkAll(Crawler *pCrawler)
 {
     // read and write what can be
     for (uint i=0; i<pCrawler->nb_conn; i++) {
@@ -102,7 +102,7 @@ void checkAll (Crawler *pCrawler)
 /** The socket is finally open !
  * Make sure it's all right, and write the request
  */
-static void pipeWrite (Connexion *conn, Crawler *pCrawler)
+static void pipeWrite(Connexion *conn, Crawler *pCrawler)
 {
     int res = 0;
     int wrtn, len;
@@ -154,7 +154,7 @@ static void pipeWrite (Connexion *conn, Crawler *pCrawler)
 /** Is there something to read on this socket
  * (which is open)
  */
-static void pipeRead (Connexion *conn, Crawler *pCrawler)
+static void pipeRead(Connexion *conn, Crawler *pCrawler)
 {
     int p = conn->parser->pos;
     int size = read (conn->socket, conn->buffer+p, maxPageSize-p-1);
@@ -214,7 +214,7 @@ conn->recycle(); \
 pCrawler->freeConns->put(conn)
 #endif // THREAD_OUTPUT
 
-static void endOfFile (Connexion *conn, Crawler *pCrawler)
+static void endOfFile(Connexion *conn, Crawler *pCrawler)
 {
     crash("End of file");
     conn->state = emptyC;

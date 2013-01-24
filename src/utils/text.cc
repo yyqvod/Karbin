@@ -17,7 +17,8 @@
 using namespace std;
 
 /* lowercase a char */
-char lowerCase (char a) {
+char lowerCase(char a)
+{
     if (a >= 'A' && a <= 'Z') {
         return a - 'A'+ 'a' ;
     } else {
@@ -27,7 +28,8 @@ char lowerCase (char a) {
 
 /* test if b starts with a
  */
-bool startWith (const char *a, char *b) {
+bool startWith(const char *a, char *b)
+{
     int i=0;
     while (a[i] != 0) {
         if (a[i] != b[i]) return false;
@@ -37,7 +39,8 @@ bool startWith (const char *a, char *b) {
 }
 
 /* test if b is forbidden by pattern a */
-bool robotsMatch (char *a, char *b) {
+bool robotsMatch(char *a, char *b)
+{
     int i=0;
     int j=0;
     while (a[i] != 0) {
@@ -56,7 +59,8 @@ bool robotsMatch (char *a, char *b) {
 
 /* test if b starts with a ignoring case
  */
-bool startWithIgnoreCase (const char *amin, char *b) {
+bool startWithIgnoreCase(const char *amin, char *b)
+{
     int i=0;
     while (amin[i] != 0) {
         if (amin[i] != (b[i]|32)) return false;
@@ -67,7 +71,8 @@ bool startWithIgnoreCase (const char *amin, char *b) {
 
 /* test if b end with a
  */
-bool endWith (char *a, char *b) {
+bool endWith(char *a, char *b)
+{
     int la = strlen(a);
     int lb = strlen(b);
     return (la <= lb) && !strcmp(a, b+lb-la);
@@ -76,7 +81,8 @@ bool endWith (char *a, char *b) {
 /* test if b end with a ignoring case
  * a can use min char, '.' (a[i] = a[i] | 32)
  */
-bool endWithIgnoreCase (const char *amin, char *b, int lb) {
+bool endWithIgnoreCase(const char *amin, char *b, int lb)
+{
     int la = strlen(amin);
     if (la <= lb) {
         int i;
@@ -93,7 +99,8 @@ bool endWithIgnoreCase (const char *amin, char *b, int lb) {
 }
 
 /* test if b contains a */
-bool caseContain (char *a, const char *b) {
+bool caseContain(char *a, const char *b)
+{
     size_t la = strlen(a);
     int i = strlen(b) - la;
     while (i >= 0) {
@@ -107,7 +114,8 @@ bool caseContain (char *a, const char *b) {
 
 /* create a copy of a string
  */
-char *newString (const char *arg) {
+char *newString(const char *arg)
+{
     char *res = new char[strlen(arg) + 1];
     strcpy(res, arg);
     return res;
@@ -115,7 +123,8 @@ char *newString (const char *arg) {
 
 /* Read a whole file
  */
-char *readfile (int fds) {
+char *readfile(int fds)
+{
     ssize_t pos = 0;
     ssize_t size = 512;
     int cont = 1;
@@ -147,7 +156,8 @@ char *readfile (int fds) {
  * must delete comments
  * no allocation (cf strtok); content is changed
  */
-char *nextToken(char **posParse, char c) {
+char *nextToken(char **posParse, char c)
+{
     // go to the beginning of next word
     bool cont = 1;
     while (cont) {
@@ -187,7 +197,8 @@ char *nextToken(char **posParse, char c) {
 #ifdef SPECIFICSEARCH
 
 /* does this char * match privilegedExt */
-bool matchPrivExt (char *file) {
+bool matchPrivExt(char *file)
+{
     int i = 0;
     int len = strlen(file);
     while (privilegedExts[i] != NULL) {
@@ -199,7 +210,8 @@ bool matchPrivExt (char *file) {
 }
 
 /* does this char * match contentType */
-bool matchContentType (char *ct) {
+bool matchContentType(char *ct)
+{
     int i=0;
     while (contentTypes[i] != NULL) {
         if (startWithIgnoreCase(contentTypes[i], ct))
@@ -211,8 +223,8 @@ bool matchContentType (char *ct) {
 
 #else // SPECIFICSEARCH is not defined
 
-bool matchPrivExt (char *file) { return false; }
-bool matchContentType (char *ct) { assert(false); return true; }
+bool matchPrivExt(char *file) { return false; }
+bool matchContentType(char *ct) { assert(false); return true; }
 
 #endif // SPECIFICSEARCH
 

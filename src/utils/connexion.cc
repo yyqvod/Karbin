@@ -27,7 +27,8 @@ using namespace std;
  * return 0 on success, 1 otherwise
  * Don't work on non-blocking fds...
  */
-int ecrire (int fd, const char *buf) {
+int ecrire(int fd, const char *buf)
+{
     int pos = 0;
     int count = strlen(buf);
     while (pos < count) {
@@ -47,7 +48,8 @@ int ecrire (int fd, const char *buf) {
  * return 0 on success, 1 otherwise
  * Don't work on non-blocking fds...
  */
-int ecrireBuff (int fd, char *buf, int count) {
+int ecrireBuff(int fd, char *buf, int count)
+{
     int pos = 0;
     while (pos < count) {
         int i = write(fd, buf + pos, count-pos);
@@ -72,25 +74,29 @@ int ecrireBuff (int fd, char *buf, int count) {
 /** Write an int on a fds
  * (uses ecrire)
  */
-int ecrireInt (int fd, int i) {
+int ecrireInt(int fd, int i)
+{
     char buf[20];
     sprintf(buf, "%d", i);
     return ecrire(fd, buf);
 }
 
-int ecrireInt2 (int fd, int i) {
+int ecrireInt2(int fd, int i)
+{
     char buf[20];
     sprintf(buf, "%d%c", i/10, i%10 + '0');
     return ecrire(fd, buf);
 }
 
-int ecrireInti (int fd, int i, char *f) {
+int ecrireInti(int fd, int i, char *f)
+{
     char buf[100];
     sprintf(buf, f, i);
     return ecrire(fd, buf);
 }
 
-int ecrireIntl (int fd, long i, char *f) {
+int ecrireIntl(int fd, long i, char *f)
+{
     char buf[100];
     sprintf(buf, f, i);
     return ecrire(fd, buf);
@@ -99,7 +105,8 @@ int ecrireIntl (int fd, long i, char *f) {
 /** Write an int on a fds
  * (uses ecrire)
  */
-int ecrireLong (int fd, long i) {
+int ecrireLong(int fd, long i)
+{
     char buf[30];
     sprintf(buf, "%ld", i);
     return ecrire(fd, buf);
@@ -109,7 +116,8 @@ int ecrireLong (int fd, long i) {
  * return 0 on success, 1 otherwise
  * Don't work on non-blocking fds...
  */
-int ecrireChar (int fd, char c) {
+int ecrireChar(int fd, char c)
+{
     int pos = 0;
     while (pos < 1) {
         int i = write(fd, &c, 1);

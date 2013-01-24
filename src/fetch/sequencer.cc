@@ -14,14 +14,15 @@
 
 using namespace std;
 
-static bool canGetUrl (bool *testPriority, Crawler *pCrawler);
+static bool canGetUrl(bool *testPriority, Crawler *pCrawler);
 uint space = 0;
 
 #define maxPerCall 100
 
 /** start the sequencer
  */
-void sequencer (Crawler *pCrawler) {
+void sequencer(Crawler *pCrawler)
+{
     bool testPriority = true;
     if (space == 0) {
         space = pCrawler->inter->putAll();
@@ -40,7 +41,8 @@ void sequencer (Crawler *pCrawler) {
 /* Get the next url
  * here is defined how priorities are handled
  */
-static bool canGetUrl (bool *testPriority, Crawler *pCrawler) {
+static bool canGetUrl(bool *testPriority, Crawler *pCrawler)
+{
     url *u;
 
     if (pCrawler->readPriorityWait) {

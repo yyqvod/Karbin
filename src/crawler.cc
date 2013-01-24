@@ -36,7 +36,8 @@ using namespace std;
 /** Constructor : initialize almost everything
  * Everything is read from the config file (larbin.conf by default)
  */
-Crawler::Crawler (int argc, char *argv[]) {
+Crawler::Crawler(int argc, char *argv[])
+{
     int i;
     void *rawMemory;
     char *configFile = (char *)"larbin.conf";
@@ -171,7 +172,8 @@ Crawler::Crawler (int argc, char *argv[]) {
 
 /** Destructor : never used because the program should never end !
  */
-Crawler::~Crawler () {
+Crawler::~Crawler()
+{
     int i;
     void *rawMemory;
 
@@ -207,7 +209,8 @@ Crawler::~Crawler () {
 }
 
 /** parse configuration file */
-void Crawler::parseFile (char *file) {
+void Crawler::parseFile(char *file)
+{
     int fds = open(file, O_RDONLY);
     if (fds < 0) {
         cerr << "cannot open config file (" << file << ") : "
@@ -288,7 +291,8 @@ void Crawler::parseFile (char *file) {
 }
 
 /** read the domain limit */
-void Crawler::manageDomain (char **posParse) {
+void Crawler::manageDomain(char **posParse)
+{
     char *tok = nextToken(posParse);
     if (domains == NULL) {
         domains = new Vector<char>;
@@ -304,7 +308,8 @@ void Crawler::manageDomain (char **posParse) {
 }
 
 /** read the forbidden extensions */
-void Crawler::manageExt (char **posParse) {
+void Crawler::manageExt(char **posParse)
+{
     char *tok = nextToken(posParse);
     while (tok != NULL && strcasecmp(tok, "end")) {
         int l = strlen(tok);
@@ -323,7 +328,8 @@ void Crawler::manageExt (char **posParse) {
 }
 
 /** make sure the max fds has not been reached */
-void Crawler::verifMax (int fd) {
+void Crawler::verifMax(int fd)
+{
     if (fd >= maxFds) {
         int n = 2 * maxFds;
         if (fd >= n) {
@@ -348,20 +354,23 @@ void Crawler::verifMax (int fd) {
 
 /** put Connection in a coherent state
  */
-Connexion::Connexion () {
+Connexion::Connexion()
+{
     state = emptyC;
     parser = NULL;
 }
 
 /** Destructor : never used : we recycle !!!
  */
-Connexion::~Connexion () {
+Connexion::~Connexion()
+{
     assert(false);
 }
 
 /** Recycle a connexion
  */
-void Connexion::recycle () {
+void Connexion::recycle()
+{
     delete parser;
     request.recycle();
 }

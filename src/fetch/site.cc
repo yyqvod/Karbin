@@ -28,14 +28,16 @@
 
 static struct sockaddr_in stataddr;
 
-void initSite () {
+void initSite()
+{
     stataddr.sin_family = AF_INET;
 }
 
 /** connect to this addr using connection conn 
  * return the state of the socket
  */
-static char getFds (Connexion *conn, struct in_addr *addr, uint port, Crawler *pCrawler) {
+static char getFds(Connexion *conn, struct in_addr *addr, uint port, Crawler *pCrawler)
+{
     memcpy (&stataddr.sin_addr,
             addr,
             sizeof (struct in_addr));
@@ -75,7 +77,8 @@ static char getFds (Connexion *conn, struct in_addr *addr, uint port, Crawler *p
 
 /** Constructor : initiate fields used by the program
  */
-NamedSite::NamedSite (Crawler *aCraw) {
+NamedSite::NamedSite(Crawler *aCraw)
+{
     pCrawler = aCraw;
     name[0] = 0;
     nburls = 0;
@@ -88,30 +91,35 @@ NamedSite::NamedSite (Crawler *aCraw) {
 
 /** Destructor : This one is never used
  */
-NamedSite::~NamedSite () {
+NamedSite::~NamedSite()
+{
     assert(false);
 }
 
 /* Management of the Fifo */
-void NamedSite::putInFifo(url *u) {
+void NamedSite::putInFifo(url *u)
+{
     fifo[inFifo] = u;
     inFifo = (inFifo + 1) % maxUrlsBySite;
     assert(inFifo!=outFifo);
 }
 
-url *NamedSite::getInFifo() {
+url *NamedSite::getInFifo()
+{
     assert (inFifo != outFifo);
     url *tmp = fifo[outFifo];
     outFifo = (outFifo + 1) % maxUrlsBySite;
     return tmp;
 }
 
-short NamedSite::fifoLength() {
+short NamedSite::fifoLength()
+{
     return (inFifo + maxUrlsBySite - outFifo) % maxUrlsBySite;
 }
 
 /* Put an url in the fifo if their are not too many */
-void NamedSite::putGenericUrl(url *u, int limit, bool prio) {
+void NamedSite::putGenericUrl(url *u, int limit, bool prio)
+{
     if (nburls > maxUrlsBySite-limit) {
         // Already enough Urls in memory for this Site
         // first check if it can already be forgotten
@@ -170,7 +178,8 @@ void NamedSite::putGenericUrl(url *u, int limit, bool prio) {
 
 /** Init a new dns query
  */
-void NamedSite::newQuery () {
+void NamedSite::newQuery()
+{
     // Update our stats
     newId();
     if (pCrawler->proxyAddr != NULL) {
@@ -207,7 +216,8 @@ void NamedSite::newQuery () {
 /** The dns query ended with success
  * assert there is a freeConn
  */
-void NamedSite::dnsAns (adns_answer *ans) {
+void NamedSite::dnsAns(adns_answer *ans)
+{
     if (ans->status == adns_s_prohibitedcname) {
         //  if (cname == NULL) {
         // try to find ip for cname of cname
@@ -251,7 +261,8 @@ void NamedSite::dnsAns (adns_answer *ans) {
  * get the robots.txt
  * assert there is a freeConn
  */
-void NamedSite::dnsOK () {
+void NamedSite::dnsOK()
+{
     Connexion *conn = pCrawler->freeConns->get();
     char res = getFds(conn, &addr, port, pCrawler);
     if (res != emptyC) {
@@ -285,7 +296,8 @@ void NamedSite::dnsOK () {
 /** Cannot get the inet addr
  * dnsState must have been set properly before the call
  */
-void NamedSite::dnsErr () {
+void NamedSite::dnsErr()
+{
     FetchError theErr;
     if (dnsState == errorDns) {
         theErr = noDNS;
@@ -312,7 +324,8 @@ void NamedSite::dnsErr () {
 }
 
 /** test if a file can be fetched thanks to the robots.txt */
-bool NamedSite::testRobots(char *file) {
+bool NamedSite::testRobots(char *file)
+{
     uint pos = forbidden.getLength();
     for (uint i=0; i<pos; i++) {
         if (robotsMatch(forbidden[i], file))
@@ -322,7 +335,8 @@ bool NamedSite::testRobots(char *file) {
 }
 
 /** Delete the old identity of the site */
-void NamedSite::newId () {
+void NamedSite::newId()
+{
     // ip expires or new name or just new port
     // Change the identity of this site
 #ifndef NDEBUG
@@ -341,7 +355,8 @@ void NamedSite::newId () {
  * compute ipHashCode
  * transfer what must be in IPSites
  */
-void NamedSite::robotsResult (FetchError res) {
+void NamedSite::robotsResult(FetchError res)
+{
     bool ok = res != noConnection;
     if (ok) {
         dnsState = doneDns;
@@ -387,7 +402,8 @@ void NamedSite::robotsResult (FetchError res) {
     }  
 }
 
-void NamedSite::transfer (url *u) {
+void NamedSite::transfer(url *u)
+{
     if (testRobots(u->getFile())) {
         if (pCrawler->proxyAddr == NULL) {
             memcpy (&u->addr, &addr, sizeof (struct in_addr));
@@ -398,7 +414,8 @@ void NamedSite::transfer (url *u) {
     }
 }
 
-void NamedSite::forgetUrl (url *u, FetchError reason) {
+void NamedSite::forgetUrl(url *u, FetchError reason)
+{
     urls();
     fetchFail(u, reason);
     answers(reason);
@@ -413,7 +430,8 @@ void NamedSite::forgetUrl (url *u, FetchError reason) {
 
 /** Constructor : initiate fields used by the program
  */
-IPSite::IPSite (Crawler *aCraw) {
+IPSite::IPSite(Crawler *aCraw)
+{
     pCrawler = aCraw;
     lastAccess = 0;
     isInFifo = false;
@@ -421,7 +439,8 @@ IPSite::IPSite (Crawler *aCraw) {
 
 /** Destructor : This one is never used
  */
-IPSite::~IPSite () {
+IPSite::~IPSite()
+{
     assert(false);
 }
 
@@ -429,7 +448,8 @@ IPSite::~IPSite () {
  * Up to now, it's very naive
  * because we have no memory of priority inside the url
  */
-void IPSite::putUrl (url *u) {
+void IPSite::putUrl(url *u)
+{
     // All right, put this url inside at the end of the queue
     tab.put(u);
     pCrawler->IPUrl++;
@@ -450,7 +470,8 @@ void IPSite::putUrl (url *u) {
 
 /** Get an url from the fifo and do some stats
  */
-inline url *IPSite::getUrl () {
+inline url *IPSite::getUrl()
+{
     url *u = tab.get();
     pCrawler->IPUrl--;
     urls();
@@ -470,7 +491,8 @@ inline url *IPSite::getUrl () {
  * This function always put the IPSite in fifo before returning
  *   (or set isInFifo to false if empty)
  */
-int IPSite::fetch () {
+int IPSite::fetch()
+{
     if (tab.isEmpty()) {
         // no more url to read
         // This is possible because this function can be called recursively
