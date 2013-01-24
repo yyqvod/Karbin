@@ -27,16 +27,17 @@
 
 using namespace std;
 
-static void pipeRead (Connexion *conn);
-static void pipeWrite (Connexion *conn);
-static void endOfFile (Connexion *conn);
+static void pipeRead (Connexion *conn, Crawler *pCrawler);
+static void pipeWrite (Connexion *conn, Crawler *pCrawler);
+static void endOfFile (Connexion *conn, Crawler *pCrawler);
 
 
 /** Check timeout
  */
-void checkTimeout () {
-    for (uint i=0; i<crawler::nb_conn; i++) {
-        Connexion *conn = crawler::connexions+i;
+void checkTimeout (Crawler *pCrawler)
+{
+    for (uint i=0; i<pCrawler->nb_conn; i++) {
+        Connexion *conn = pCrawler->connexions+i;
         if (conn->state != emptyC) {
             if (conn->timeout > 0) {
                 if (conn->timeout > timeoutPage) {
@@ -47,7 +48,7 @@ void checkTimeout () {
             } else {
                 // This server doesn't answer (time out)
                 conn->err = timeout;
-                endOfFile(conn);
+                endOfFile(conn, pCrawler);
             }
         }
     }
@@ -57,37 +58,42 @@ void checkTimeout () {
  * fill fd_set for next select
  * give back max fds
  */
-void checkAll () {
+void checkAll (Crawler *pCrawler)
+{
     // read and write what can be
-    for (uint i=0; i<crawler::nb_conn; i++) {
-        Connexion *conn = crawler::connexions+i;
+    for (uint i=0; i<pCrawler->nb_conn; i++) {
+        Connexion *conn = pCrawler->connexions+i;
         switch (conn->state) {
             case connectingC:
             case writeC:
-                if (crawler::ansPoll[conn->socket]) {
+                if (pCrawler->ansPoll[conn->socket]) {
                     // trying to finish the connection
-                    pipeWrite(conn);
+                    pipeWrite(conn, pCrawler);
                 }
                 break;
             case openC:
-                if (crawler::ansPoll[conn->socket]) {
+                if (pCrawler->ansPoll[conn->socket]) {
                     // The socket is open, let's try to read it
-                    pipeRead(conn);
+                    pipeRead(conn, pCrawler);
                 }
                 break;
         }
     }
 
     // update fd_set for the next select
-    for (uint i=0; i<crawler::nb_conn; i++) {
-        int n = (crawler::connexions+i)->socket;
-        switch ((crawler::connexions+i)->state) {
+    for (uint i=0; i<pCrawler->nb_conn; i++) {
+        int n = (pCrawler->connexions+i)->socket;
+        switch ((pCrawler->connexions+i)->state) {
             case connectingC:
             case writeC:
-                crawler::setPoll(n, POLLOUT);
+                pCrawler->pollfds[pCrawler->posPoll].fd = n;
+                pCrawler->pollfds[pCrawler->posPoll].events = POLLOUT;
+                pCrawler->posPoll++;
                 break;
             case openC:
-                crawler::setPoll(n, POLLIN);
+                pCrawler->pollfds[pCrawler->posPoll].fd = n;
+                pCrawler->pollfds[pCrawler->posPoll].events = POLLIN;
+                pCrawler->posPoll++;
                 break;
         }
     }
@@ -96,7 +102,8 @@ void checkAll () {
 /** The socket is finally open !
  * Make sure it's all right, and write the request
  */
-static void pipeWrite (Connexion *conn) {
+static void pipeWrite (Connexion *conn, Crawler *pCrawler)
+{
     int res = 0;
     int wrtn, len;
     socklen_t size = sizeof(int);
@@ -107,7 +114,7 @@ static void pipeWrite (Connexion *conn) {
             if (res) {
                 // Unable to connect
                 conn->err = noConnection;
-                endOfFile(conn);
+                endOfFile(conn, pCrawler);
                 return;
             }
             // Connection succesfull
@@ -121,7 +128,7 @@ static void pipeWrite (Connexion *conn) {
             if (wrtn >= 0) {
                 addWrite(wrtn);
 #ifdef MAXBANDWIDTH
-                crawler::remainBand -= wrtn;
+                pCrawler->remainBand -= wrtn;
 #endif // MAXBANDWIDTH
                 conn->pos += wrtn;
                 if (conn->pos < len) {
@@ -135,7 +142,7 @@ static void pipeWrite (Connexion *conn) {
                 } else {
                     // unrecoverable error, forget it
                     conn->err = earlyStop;
-                    endOfFile(conn);
+                    endOfFile(conn, pCrawler);
                     return;
                 }
             }
@@ -147,7 +154,8 @@ static void pipeWrite (Connexion *conn) {
 /** Is there something to read on this socket
  * (which is open)
  */
-static void pipeRead (Connexion *conn) {
+static void pipeRead (Connexion *conn, Crawler *pCrawler)
+{
     int p = conn->parser->pos;
     int size = read (conn->socket, conn->buffer+p, maxPageSize-p-1);
     switch (size) {
@@ -156,7 +164,7 @@ static void pipeRead (Connexion *conn) {
             printf("\t\t==> page size %d <==\n", conn->parser->pos);
             if (conn->parser->endInput())
                 conn->err = (FetchError) errno;
-            endOfFile(conn);
+            endOfFile(conn, pCrawler);
             break;
         case -1:
             switch (errno) {
@@ -166,7 +174,7 @@ static void pipeRead (Connexion *conn) {
                 default:
                     // Error : let's forget this page
                     conn->err = earlyStop;
-                    endOfFile(conn);
+                    endOfFile(conn, pCrawler);
                     break;
             }
             break;
@@ -175,7 +183,7 @@ static void pipeRead (Connexion *conn) {
             conn->timeout += size / timeoutIncr;
             addRead(size);
 #ifdef MAXBANDWIDTH
-            crawler::remainBand -= size;
+            pCrawler->remainBand -= size;
 #endif // MAXBANDWIDTH
             if (conn->parser->inputHeaders(size) == 0) {
                 // nothing special
@@ -183,12 +191,12 @@ static void pipeRead (Connexion *conn) {
                     // We've read enough...
                     printf("*** page size %d is to big ! ***\n", conn->parser->pos);
                     conn->err = tooBig;
-                    endOfFile(conn);
+                    endOfFile(conn, pCrawler);
                 }
             } else {
                 // The parser does not want any more input (errno explains why)
                 conn->err = (FetchError) errno;
-                endOfFile(conn);
+                endOfFile(conn, pCrawler);
             }
             break;
     }
@@ -198,15 +206,16 @@ static void pipeRead (Connexion *conn) {
 /* What are we doing when it's over with one file ? */
 
 #ifdef THREAD_OUTPUT
-#define manageHtml() crawler::userConns->put(conn)
+#define manageHtml() pCrawler->userConns->put(conn)
 #else // THREAD_OUTPUT
 #define manageHtml() \
     endOfLoad((html *)conn->parser, conn->err); \
 conn->recycle(); \
-crawler::freeConns->put(conn)
+pCrawler->freeConns->put(conn)
 #endif // THREAD_OUTPUT
 
-static void endOfFile (Connexion *conn) {
+static void endOfFile (Connexion *conn, Crawler *pCrawler)
+{
     crash("End of file");
     conn->state = emptyC;
     close(conn->socket);
@@ -217,7 +226,7 @@ static void endOfFile (Connexion *conn) {
         r->parse(conn->err != success);
         r->server->robotsResult(conn->err);
         conn->recycle();
-        crawler::freeConns->put(conn);
+        pCrawler->freeConns->put(conn);
     } else {
         // that was an html page
         printf("End of Html page\n");

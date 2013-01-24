@@ -6,14 +6,14 @@ files=`find . -name '*.cc'`
 for file in $files
 do
     echo $file
-    sed -i 's/global/crawler/g' $file
+    sed -i 's/\<craw\>/\<pCrawler\>/g' $file
 done
 
 files=`find . -name "*.h"`
 for file in $files
 do
     echo $file
-    sed -i 's/global/crawler/g' $file
+    sed -i 's/\<craw\>/\<pCrawler\>/g' $file
 done
 
 #使用vim替换命令

@@ -8,12 +8,12 @@
 /* Opens sockets
  * this function perform dns calls, using adns
  */
-void fetchDns ();
+void fetchDns (Crawler *pCrawler);
 
 /* Opens sockets
  * Never block (only opens sockets on allready known sites)
  * work inside the main thread
  */
-void fetchOpen ();
+void fetchOpen (Crawler *pCrawler);
 
 #endif // FETCHOPEN_H

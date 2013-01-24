@@ -35,7 +35,7 @@ void initSite () {
 /** connect to this addr using connection conn 
  * return the state of the socket
  */
-static char getFds (Connexion *conn, struct in_addr *addr, uint port) {
+static char getFds (Connexion *conn, struct in_addr *addr, uint port, Crawler *pCrawler) {
     memcpy (&stataddr.sin_addr,
             addr,
             sizeof (struct in_addr));
@@ -44,13 +44,13 @@ static char getFds (Connexion *conn, struct in_addr *addr, uint port) {
     if (fd < 0)
         return emptyC;
     else
-        crawler::verifMax(fd);
+        pCrawler->verifMax(fd);
     conn->socket = fd;
     for (;;) {
         fcntl(fd, F_SETFL, O_NONBLOCK);
         struct sockaddr_in *theaddr;
-        if (crawler::proxyAddr != NULL)
-            theaddr = crawler::proxyAddr;
+        if (pCrawler->proxyAddr != NULL)
+            theaddr = pCrawler->proxyAddr;
         else
             theaddr = &stataddr;
         if (connect(fd, (struct sockaddr*) theaddr,
@@ -75,10 +75,12 @@ static char getFds (Connexion *conn, struct in_addr *addr, uint port) {
 
 /** Constructor : initiate fields used by the program
  */
-NamedSite::NamedSite () {
+NamedSite::NamedSite (Crawler *aCraw) {
+    pCrawler = aCraw;
     name[0] = 0;
     nburls = 0;
-    inFifo = 0; outFifo = 0;
+    inFifo = 0;
+    outFifo = 0;
     isInFifo = false;
     dnsState = waitDns;
     cname = NULL;
@@ -133,25 +135,25 @@ void NamedSite::putGenericUrl(url *u, int limit, bool prio) {
         }
         // else put it back in URLsDisk
         refUrl();
-        crawler::inter->getOne();
+        pCrawler->inter->getOne();
         if (prio) {
-            crawler::URLsPriorityWait->put(u);
+            pCrawler->URLsPriorityWait->put(u);
         } else {
-            crawler::URLsDiskWait->put(u);
+            pCrawler->URLsDiskWait->put(u);
         }
     } else {
         nburls++;
         if (dnsState == waitDns
                 || strcmp(name, u->getHost())
                 || port != u->getPort()
-                || crawler::now > dnsTimeout) {
+                || pCrawler->now > dnsTimeout) {
             // dns not done or other site
             putInFifo(u);
             addNamedUrl();
             // Put Site in fifo if not yet in
             if (!isInFifo) {
                 isInFifo = true;
-                crawler::dnsSites->put(this);
+                pCrawler->dnsSites->put(this);
             }
         } else switch (dnsState) {
             case doneDns:
@@ -171,7 +173,7 @@ void NamedSite::putGenericUrl(url *u, int limit, bool prio) {
 void NamedSite::newQuery () {
     // Update our stats
     newId();
-    if (crawler::proxyAddr != NULL) {
+    if (pCrawler->proxyAddr != NULL) {
         // we use a proxy, no need to get the sockaddr
         // give anything for going on
         siteSeen();
@@ -193,9 +195,9 @@ void NamedSite::newQuery () {
         }
     } else {
         // submit an adns query
-        crawler::nbDnsCalls++;
+        pCrawler->nbDnsCalls++;
         adns_query quer = NULL;
-        adns_submit(crawler::ads, name,
+        adns_submit(pCrawler->ads, name,
                 (adns_rrtype) adns_r_addr,
                 (adns_queryflags) 0,
                 this, &quer);
@@ -211,9 +213,9 @@ void NamedSite::dnsAns (adns_answer *ans) {
         // try to find ip for cname of cname
         delete [] cname;
         cname = newString(ans->cname);
-        crawler::nbDnsCalls++;
+        pCrawler->nbDnsCalls++;
         adns_query quer = NULL;
-        adns_submit(crawler::ads, cname,
+        adns_submit(pCrawler->ads, cname,
                 (adns_rrtype) adns_r_addr,
                 (adns_queryflags) 0,
                 this, &quer);
@@ -250,11 +252,11 @@ void NamedSite::dnsAns (adns_answer *ans) {
  * assert there is a freeConn
  */
 void NamedSite::dnsOK () {
-    Connexion *conn = crawler::freeConns->get();
-    char res = getFds(conn, &addr, port);
+    Connexion *conn = pCrawler->freeConns->get();
+    char res = getFds(conn, &addr, port, pCrawler);
     if (res != emptyC) {
         conn->timeout = timeoutPage;
-        if (crawler::proxyAddr != NULL) {
+        if (pCrawler->proxyAddr != NULL) {
             // use a proxy
             conn->request.addString("GET http://");
             conn->request.addString(name);
@@ -267,14 +269,14 @@ void NamedSite::dnsOK () {
             conn->request.addString("GET /robots.txt HTTP/1.0\r\nHost: ");
         }
         conn->request.addString(name);
-        conn->request.addString(crawler::headersRobots);
+        conn->request.addString(pCrawler->headersRobots);
         conn->parser = new robots(this, conn);
         conn->pos = 0;
         conn->err = success;
         conn->state = res;
     } else {
         // Unable to get a socket
-        crawler::freeConns->put(conn);
+        pCrawler->freeConns->put(conn);
         dnsState = noConnDns;
         dnsErr();
     }
@@ -305,7 +307,7 @@ void NamedSite::dnsErr () {
     if (inFifo==outFifo) {
         isInFifo = false;
     } else {
-        crawler::dnsSites->put(this);
+        pCrawler->dnsSites->put(this);
     }
 }
 
@@ -331,7 +333,7 @@ void NamedSite::newId () {
     url *u = fifo[outFifo];
     strcpy(name, u->getHost());
     port = u->getPort();
-    dnsTimeout = crawler::now + dnsValidTime;
+    dnsTimeout = pCrawler->now + dnsValidTime;
     dnsState = waitDns;
 }
 
@@ -344,7 +346,7 @@ void NamedSite::robotsResult (FetchError res) {
     if (ok) {
         dnsState = doneDns;
         // compute ip hashcode
-        if (crawler::proxyAddr == NULL) {
+        if (pCrawler->proxyAddr == NULL) {
             ipHash=0;
             char *s = (char *) &addr;
             for (uint i=0; i<sizeof(struct in_addr); i++) {
@@ -352,7 +354,7 @@ void NamedSite::robotsResult (FetchError res) {
             }
         } else {
             // no ip and need to avoid rapidFire => use hostHashCode
-            ipHash = this - crawler::namedSiteList;
+            ipHash = this - pCrawler->namedSiteList;
         }
         ipHash %= IPSiteListSize;
     } else {
@@ -381,16 +383,16 @@ void NamedSite::robotsResult (FetchError res) {
     if (inFifo==outFifo) {
         isInFifo = false;
     } else {
-        crawler::dnsSites->put(this);
+        pCrawler->dnsSites->put(this);
     }  
 }
 
 void NamedSite::transfer (url *u) {
     if (testRobots(u->getFile())) {
-        if (crawler::proxyAddr == NULL) {
+        if (pCrawler->proxyAddr == NULL) {
             memcpy (&u->addr, &addr, sizeof (struct in_addr));
         }
-        crawler::IPSiteList[ipHash].putUrl(u);
+        pCrawler->IPSiteList[ipHash].putUrl(u);
     } else {
         forgetUrl(u, forbiddenRobots);
     }
@@ -402,7 +404,7 @@ void NamedSite::forgetUrl (url *u, FetchError reason) {
     answers(reason);
     nburls--;
     delete u;
-    crawler::inter->getOne();
+    pCrawler->inter->getOne();
 }
 
 ///////////////////////////////////////////////////////////
@@ -411,7 +413,8 @@ void NamedSite::forgetUrl (url *u, FetchError reason) {
 
 /** Constructor : initiate fields used by the program
  */
-IPSite::IPSite () {
+IPSite::IPSite (Crawler *aCraw) {
+    pCrawler = aCraw;
     lastAccess = 0;
     isInFifo = false;
 }
@@ -429,18 +432,18 @@ IPSite::~IPSite () {
 void IPSite::putUrl (url *u) {
     // All right, put this url inside at the end of the queue
     tab.put(u);
-    addIPUrl();
+    pCrawler->IPUrl++;
     // Put Site in fifo if not yet in
     if (!isInFifo) {
 #ifndef NDEBUG
         if (lastAccess == 0) addipsite();
 #endif // NDEBUG
         isInFifo = true;
-        if (lastAccess + crawler::waitDuration <= crawler::now
-                && crawler::freeConns->isNonEmpty()) {
+        if (lastAccess + pCrawler->waitDuration <= pCrawler->now
+                && pCrawler->freeConns->isNonEmpty()) {
             fetch();
         } else {
-            crawler::okSites->put(this);
+            pCrawler->okSites->put(this);
         }
     }
 }
@@ -449,10 +452,10 @@ void IPSite::putUrl (url *u) {
  */
 inline url *IPSite::getUrl () {
     url *u = tab.get();
-    delIPUrl();
+    pCrawler->IPUrl--;
     urls();
-    crawler::namedSiteList[u->hostHashCode()].nburls--;
-    crawler::inter->getOne();
+    pCrawler->namedSiteList[u->hostHashCode()].nburls--;
+    pCrawler->inter->getOne();
 #if defined(SPECIFICSEARCH) && !defined(NOSTATS)
     if (privilegedExts[0] != NULL && matchPrivExt(u->getFile())) {
         extensionTreated();
@@ -474,21 +477,21 @@ int IPSite::fetch () {
         isInFifo = false;
         return 0;
     } else {
-        int next_call = lastAccess + crawler::waitDuration;
-        if (next_call > crawler::now) {
-            crawler::okSites->rePut(this);
+        int next_call = lastAccess + pCrawler->waitDuration;
+        if (next_call > pCrawler->now) {
+            pCrawler->okSites->rePut(this);
             return next_call;
         } else {
-            Connexion *conn = crawler::freeConns->get();
+            Connexion *conn = pCrawler->freeConns->get();
             url *u = getUrl();
             // We're allowed to fetch this one
             // open the socket and write the request
-            char res = getFds(conn, &(u->addr), u->getPort());
+            char res = getFds(conn, &(u->addr), u->getPort(), pCrawler);
             if (res != emptyC) {
-                lastAccess = crawler::now;
+                lastAccess = pCrawler->now;
                 conn->timeout = timeoutPage;
                 conn->request.addString("GET ");
-                if (crawler::proxyAddr != NULL) {
+                if (pCrawler->proxyAddr != NULL) {
                     char *tmp = u->getUrl();
                     conn->request.addString(tmp);
                 } else {
@@ -502,15 +505,15 @@ int IPSite::fetch () {
                     conn->request.addString(u->cookie);
                 }
 #endif // COOKIES
-                conn->request.addString(crawler::headers);
-                conn->parser = new html (u, conn);
+                conn->request.addString(pCrawler->headers);
+                conn->parser = new html (u, conn, pCrawler);
                 conn->pos = 0;
                 conn->err = success;
                 conn->state = res;
                 if (tab.isEmpty()) {
                     isInFifo = false;
                 } else {
-                    crawler::okSites->put(this);
+                    pCrawler->okSites->put(this);
                 }
                 return 0;
             } else {
@@ -518,7 +521,7 @@ int IPSite::fetch () {
                 fetchFail(u, noConnection);
                 answers(noConnection);
                 delete u;
-                crawler::freeConns->put(conn);
+                pCrawler->freeConns->put(conn);
                 return fetch();
             }    
         }

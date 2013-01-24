@@ -35,6 +35,8 @@
 #define LINK 0
 #define BASE 1
 
+#define USERAGENT "larbin"
+
 using namespace std;
 
 /***********************************
@@ -160,7 +162,7 @@ void robots::parseRobots () {
                         && strcasecmp(tok, "useragent")
                         && strcasecmp(tok, "user-agent")
                         && strcasecmp(tok, "disallow")) {
-                    if (caseContain(tok, crawler::userAgent)) {
+                    if (caseContain(tok, USERAGENT)) {
                         state = 2;
                     } else if (state == 0 && !strcmp(tok, "*")) {
                         state = 1;
@@ -258,10 +260,11 @@ void initSpecific () { }
 
 /** Constructor
  */
-html::html (url *here, Connexion *conn) : file(conn) {
+html::html (url *here, Connexion *conn, Crawler *aCraw) : file(conn) {
     newPars();
     this->here = here;
     base = here->giveBase();
+    pCrawler = aCraw;
     state = ANSWER;
     isInteresting = false;
     constrSpec();
@@ -290,15 +293,15 @@ int html::getLength () {
 /* manage a new url : verify and send it */
 void html::manageUrl (url *nouv, bool isRedir) {
     if (nouv->isValid()
-            && filter1(nouv->getHost(), nouv->getFile())
-            && (crawler::externalLinks || isRedir
+            && filter1(nouv->getHost(), nouv->getFile(), pCrawler)
+            && (pCrawler->externalLinks || isRedir
                 || !strcmp(nouv->getHost(), this->here->getHost()))) {
         // The extension is not stupid (gz, pdf...)
 #ifdef LINKS_INFO
         links.addElement(nouv->giveUrl());
 #endif // LINKS_INFO
-        if (nouv->initOK(here)) {
-            check(nouv);
+        if (nouv->initOK(here, pCrawler)) {
+            check(nouv, pCrawler);
         } else {
             // this url is forbidden for errno reason (set by initOK)
             answers(errno);
@@ -518,12 +521,6 @@ int html::endInput () {
         errno = err40X;
         return 1;
     }
-#ifdef NO_DUP
-    if (!crawler::hDuplicate->testSet(posParse)) {
-        errno = duplicate;
-        return 1;
-    }
-#endif // NO_DUP
     buffer[pos] = 0;
     _endOfInput();
     // now parse the html

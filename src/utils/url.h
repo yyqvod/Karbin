@@ -14,6 +14,7 @@
 
 #include "types.h"
 
+struct Crawler;
 bool fileNormalize (char *file);
 
 class url {
@@ -70,7 +71,7 @@ class url {
   /* Set depth to max if we are at an entry point in the site
    * try to find the ip addr
    * answer false if forbidden by robots.txt, true otherwise */
-  bool initOK (url *from);
+  bool initOK (url *from, Crawler *pCrawler);
 
   /** return the base of the url
    * give means that you have to delete the string yourself

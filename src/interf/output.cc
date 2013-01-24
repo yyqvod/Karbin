@@ -59,21 +59,14 @@ void endOfLoad (html *parser, FetchError err) {
 #ifdef THREAD_OUTPUT
 /** In this thread, end user manage the result of the crawl
  */
-static void *startOutput (void *none) {
-    initUserOutput();
-    for (;;) {
-        Connexion *conn = crawler::userConns->get();
-        endOfLoad((html *)conn->parser, conn->err);
-        conn->recycle();
-        crawler::freeConns->put(conn);
-    }
-    return NULL;
-}
-
-void initOutput () {
-    startThread(startOutput, NULL);
-}
-
+//static void *startOutput (void *none) {
+//    initUserOutput();
+//}
+//
+//void initOutput () {
+//    startThread(startOutput, NULL);
+//}
+//
 #else // THREAD_OUTPUT not defined
 
 void initOutput () {

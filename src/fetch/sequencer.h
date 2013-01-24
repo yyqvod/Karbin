@@ -9,6 +9,6 @@
 extern uint space;
 
 /** Call the sequencer */
-void sequencer ();
+void sequencer(Crawler *pCrawler);
 
 #endif

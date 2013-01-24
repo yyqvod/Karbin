@@ -93,7 +93,7 @@ bool endWithIgnoreCase (const char *amin, char *b, int lb) {
 }
 
 /* test if b contains a */
-bool caseContain (char *a, char *b) {
+bool caseContain (char *a, const char *b) {
     size_t la = strlen(a);
     int i = strlen(b) - la;
     while (i >= 0) {

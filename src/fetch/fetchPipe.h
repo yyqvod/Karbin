@@ -5,8 +5,10 @@
 #ifndef FETCHPIPE_H
 #define FETCHPIPE_H
 
-void checkTimeout ();
+#include "crawler.h"
 
-void checkAll ();
+void checkTimeout (Crawler *pCrawler);
+
+void checkAll (Crawler *pCrawler);
 
 #endif // FETCH_H

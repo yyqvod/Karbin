@@ -21,14 +21,14 @@ using namespace std;
  * Never block (only opens sockets on already known sites)
  * work inside the main thread
  */
-void fetchOpen () {
+void fetchOpen (Crawler *pCrawler) {
     static time_t next_call = 0;
-    if (crawler::now < next_call) { // too early to come back
+    if (pCrawler->now < next_call) { // too early to come back
         return;
     }
     int cont = 1;
-    while (cont && crawler::freeConns->isNonEmpty()) {
-        IPSite *s = crawler::okSites->tryGet();
+    while (cont && pCrawler->freeConns->isNonEmpty()) {
+        IPSite *s = pCrawler->okSites->tryGet();
         if (s == NULL) {
             cont = 0;
         } else {
@@ -41,12 +41,12 @@ void fetchOpen () {
 /* Opens sockets
  * this function perform dns calls, using adns
  */
-void fetchDns () {
+void fetchDns (Crawler *pCrawler) {
     // Submit queries
-    while (crawler::nbDnsCalls<crawler::dnsConn
-            && crawler::freeConns->isNonEmpty()
-            && crawler::IPUrl < maxIPUrls) { // try to avoid too many dns calls
-        NamedSite *site = crawler::dnsSites->tryGet();
+    while (pCrawler->nbDnsCalls<pCrawler->dnsConn
+            && pCrawler->freeConns->isNonEmpty()
+            && pCrawler->IPUrl < maxIPUrls) { // try to avoid too many dns calls
+        NamedSite *site = pCrawler->dnsSites->tryGet();
         if (site == NULL) {
             break;
         } else {
@@ -55,16 +55,16 @@ void fetchDns () {
     }
 
     // Read available answers
-    while (crawler::nbDnsCalls && crawler::freeConns->isNonEmpty()) {
+    while (pCrawler->nbDnsCalls && pCrawler->freeConns->isNonEmpty()) {
         NamedSite *site;
         adns_query quer = NULL;
         adns_answer *ans;
-        int res = adns_check(crawler::ads, &quer, &ans, (void**)&site);
+        int res = adns_check(pCrawler->ads, &quer, &ans, (void**)&site);
         if (res == ESRCH || res == EAGAIN) {
             // No more query or no more answers
             break;
         }
-        crawler::nbDnsCalls--;
+        pCrawler->nbDnsCalls--;
         site->dnsAns(ans);
         free(ans); // ans has been allocated with malloc
     }

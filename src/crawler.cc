@@ -34,62 +34,64 @@ using namespace std;
 ///////////////////////////////////////////////////////////
 
 // define all the static variables
-time_t crawler::now;
-hashTable *crawler::seen;
-#ifdef NO_DUP
-hashDup *crawler::hDuplicate;
-#endif // NO_DUP
-SyncFifo<url> *crawler::URLsPriority;
-SyncFifo<url> *crawler::URLsPriorityWait;
-uint crawler::readPriorityWait=0;
-PersistentFifo *crawler::URLsDisk;
-PersistentFifo *crawler::URLsDiskWait;
-uint crawler::readWait=0;
-IPSite *crawler::IPSiteList;
-NamedSite *crawler::namedSiteList;
-Fifo<IPSite> *crawler::okSites;
-Fifo<NamedSite> *crawler::dnsSites;
-Connexion *crawler::connexions;
-adns_state crawler::ads;
-uint crawler::nbDnsCalls = 0;
-ConstantSizedFifo<Connexion> *crawler::freeConns;
-#ifdef THREAD_OUTPUT
-ConstantSizedFifo<Connexion> *crawler::userConns;
-#endif
-Interval *crawler::inter;
-int8_t crawler::depthInSite;
-bool crawler::externalLinks = true;
-time_t crawler::waitDuration;
-char *crawler::userAgent;
-char *crawler::sender;
-char *crawler::headers;
-char *crawler::headersRobots;
-sockaddr_in *crawler::proxyAddr;
-Vector<char> *crawler::domains;
-Vector<char> crawler::forbExt;
-uint crawler::nb_conn;
-uint crawler::dnsConn;
-struct pollfd *crawler::pollfds;
-uint crawler::posPoll;
-uint crawler::sizePoll;
-short *crawler::ansPoll;
-int crawler::maxFds;
-#ifdef MAXBANDWIDTH
-long int crawler::remainBand = MAXBANDWIDTH;
-#endif // MAXBANDWIDTH
-int crawler::IPUrl = 0;
+//time_t crawler::now;
+//hashTable *crawler::seen;
+//#ifdef NO_DUP
+//hashDup *crawler::hDuplicate;
+//#endif // NO_DUP
+//SyncFifo<url> *crawler::URLsPriority;
+//SyncFifo<url> *crawler::URLsPriorityWait;
+//uint crawler::readPriorityWait=0;
+//PersistentFifo *crawler::URLsDisk;
+//PersistentFifo *crawler::URLsDiskWait;
+//uint crawler::readWait=0;
+//IPSite *crawler::IPSiteList;
+//NamedSite *crawler::namedSiteList;
+//Fifo<IPSite> *crawler::okSites;
+//Fifo<NamedSite> *crawler::dnsSites;
+//Connexion *crawler::connexions;
+//adns_state crawler::ads;
+//uint crawler::nbDnsCalls = 0;
+//ConstantSizedFifo<Connexion> *crawler::freeConns;
+//#ifdef THREAD_OUTPUT
+//ConstantSizedFifo<Connexion> *crawler::userConns;
+//#endif
+//Interval *crawler::inter;
+//int8_t crawler::depthInSite;
+//bool crawler::externalLinks = true;
+//time_t crawler::waitDuration;
+//char *crawler::userAgent;
+//char *crawler::sender;
+//char *crawler::headers;
+//char *crawler::headersRobots;
+//sockaddr_in *crawler::proxyAddr;
+//Vector<char> *crawler::domains;
+//Vector<char> crawler::forbExt;
+//uint crawler::nb_conn;
+//uint crawler::dnsConn;
+//struct pollfd *crawler::pollfds;
+//uint crawler::posPoll;
+//uint crawler::sizePoll;
+//short *crawler::ansPoll;
+//int crawler::maxFds;
+//#ifdef MAXBANDWIDTH
+//long int crawler::remainBand = MAXBANDWIDTH;
+//#endif // MAXBANDWIDTH
+//int crawler::IPUrl = 0;
 
 /** Constructor : initialize almost everything
  * Everything is read from the config file (larbin.conf by default)
  */
-crawler::crawler (int argc, char *argv[]) {
+Crawler::Crawler (int argc, char *argv[]) {
+    int i;
+    void *rawMemory;
     char *configFile = (char *)"larbin.conf";
 #ifdef RELOAD
     bool reload = true;
 #else
     bool reload = false;
 #endif
-    now = time(NULL);
+
     // verification of arguments
     int pos = 1;
     while (pos < argc) {
@@ -110,6 +112,15 @@ crawler::crawler (int argc, char *argv[]) {
     }
 
     // Standard values
+    now = time(NULL);
+    readPriorityWait=0;
+    readWait=0;
+    nbDnsCalls = 0;
+    externalLinks = true;
+#ifdef MAXBANDWIDTH
+    remainBand = MAXBANDWIDTH;
+#endif
+    IPUrl = 0;
     waitDuration = 60;
     depthInSite = 5;
     userAgent = (char *)"larbin";
@@ -124,11 +135,20 @@ crawler::crawler (int argc, char *argv[]) {
     URLsPriority = new SyncFifo<url>;
     URLsPriorityWait = new SyncFifo<url>;
     inter = new Interval(ramUrls);
-    namedSiteList = new NamedSite[namedSiteListSize];
-    IPSiteList = new IPSite[IPSiteListSize];
     okSites = new Fifo<IPSite>(2000);
     dnsSites = new Fifo<NamedSite>(2000);
     seen = new hashTable(!reload);
+
+    rawMemory = operator new(namedSiteListSize * sizeof(NamedSite));
+    namedSiteList = reinterpret_cast<NamedSite *>(rawMemory);
+    for (i = 0; i < namedSiteListSize; i++)
+        new (&namedSiteList[i]) NamedSite(this);
+
+    rawMemory = operator new(IPSiteListSize * sizeof(IPSite));
+    IPSiteList = reinterpret_cast<IPSite *>(rawMemory);
+    for (i = 0; i < IPSiteListSize; i++)
+        new (&IPSiteList[i]) IPSite(this);
+
 #ifdef NO_DUP
     hDuplicate = new hashDup(dupSize, dupFile, !reload);
 #endif // NO_DUP
@@ -145,7 +165,7 @@ crawler::crawler (int argc, char *argv[]) {
     strtmp.addString(sender);
 #ifdef SPECIFICSEARCH
     strtmp.addString("\r\nAccept: text/html");
-    int i=0;
+    i = 0;
     while (contentTypes[i] != NULL) {
         strtmp.addString(", ");
         strtmp.addString(contentTypes[i]);
@@ -198,12 +218,43 @@ crawler::crawler (int argc, char *argv[]) {
 
 /** Destructor : never used because the program should never end !
  */
-crawler::~crawler () {
-    assert(false);
+Crawler::~Crawler () {
+    int i;
+    void *rawMemory;
+
+    delete URLsDisk;
+    delete URLsDiskWait;
+    delete URLsPriority;
+    delete URLsPriorityWait;
+    delete inter;
+    delete okSites;
+    delete dnsSites;
+    delete seen;
+
+    for (i = 0; i < namedSiteListSize; i++)
+        namedSiteList[i].~NamedSite();
+    rawMemory = (void *)namedSiteList;
+    operator delete(rawMemory);
+
+    for (i = 0; i < IPSiteListSize; i++)
+        IPSiteList[i].~IPSite();
+    rawMemory = (void *)IPSiteList;
+    operator delete(rawMemory);
+
+#ifdef NO_DUP
+    delete hDuplicate;
+#endif // NO_DUP
+#ifdef THREAD_OUTPUT
+    delete userConns;
+#endif
+    delete freeConns;
+    delete [] connexions;
+    delete [] pollfds;
+    delete [] ansPoll;
 }
 
 /** parse configuration file */
-void crawler::parseFile (char *file) {
+void Crawler::parseFile (char *file) {
     int fds = open(file, O_RDONLY);
     if (fds < 0) {
         cerr << "cannot open config file (" << file << ") : "
@@ -230,10 +281,10 @@ void crawler::parseFile (char *file) {
             sender = newString(nextToken(&posParse));
         } else if (!strcasecmp(tok, "startUrl")) {
             tok = nextToken(&posParse);
-            url *u = new url(tok, crawler::depthInSite, (url *) NULL);
+            url *u = new url(tok, depthInSite, (url *) NULL);
             if (u->isValid()) {
                 printf("Start from: %s\n", tok);
-                check(u);
+                check(u, this);
             } else {
                 cerr << "the start url " << tok << " is invalid\n";
                 exit(1);
@@ -284,7 +335,7 @@ void crawler::parseFile (char *file) {
 }
 
 /** read the domain limit */
-void crawler::manageDomain (char **posParse) {
+void Crawler::manageDomain (char **posParse) {
     char *tok = nextToken(posParse);
     if (domains == NULL) {
         domains = new Vector<char>;
@@ -300,7 +351,7 @@ void crawler::manageDomain (char **posParse) {
 }
 
 /** read the forbidden extensions */
-void crawler::manageExt (char **posParse) {
+void Crawler::manageExt (char **posParse) {
     char *tok = nextToken(posParse);
     while (tok != NULL && strcasecmp(tok, "end")) {
         int l = strlen(tok);
@@ -319,7 +370,7 @@ void crawler::manageExt (char **posParse) {
 }
 
 /** make sure the max fds has not been reached */
-void crawler::verifMax (int fd) {
+void Crawler::verifMax (int fd) {
     if (fd >= maxFds) {
         int n = 2 * maxFds;
         if (fd >= n) {

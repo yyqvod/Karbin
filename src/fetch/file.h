@@ -14,6 +14,7 @@
 #include "fetch/site.h"
 
 struct Connexion;
+struct Crawler;
 
 class file {
     protected:
@@ -79,7 +80,7 @@ class html : public file {
 
     public:
         // Constructor
-        html (url *here, Connexion *conn);
+        html (url *here, Connexion *conn, Crawler *aCraw);
         // Destructor
         ~html ();
         /** a string is arriving
@@ -88,6 +89,8 @@ class html : public file {
          */
         int inputHeaders (int size); // just parse headers
         int endInput ();
+        /* crawler point */
+        Crawler *pCrawler;
         // State of our read : answer, headers, tag, html...
         int state;
         /** return the url of this file */

@@ -28,7 +28,7 @@ bool endWith (char *a, char *b);
 bool endWithIgnoreCase (const char *amin, char *b, int lb);
 
 /* tests if b contains a */
-bool caseContain (char *a, char *b);
+bool caseContain (char *a, const char *b);
 
 /* create a copy of a string */
 char *newString (const char *arg);

@@ -136,44 +136,44 @@ void Histogram::incrementEnd () {
 
 /* Html output stat for last intervals */
 void Histogram::write (int fds) {
-    /* Compute the curve */
-    int maxvbis = maxv;
-    maxv = height; /* let's recompute it for next time */
-    for (int i=beg, c=0; c<size; ++i, ++c) {
-        if (i == size) i = 0; 
-        if (tab1[i] > maxv) maxv = tab1[i];
-        int h1 = (tab1[i] * height) / maxvbis;
-        int h2 = (tab2[i] * height) / maxvbis;
-        for (int j=0; j<height; ++j) {
-            if (j >= h1)
-                curve[height-1-j][c+16] = ' ';
-            else if (j >= h2)
-                curve[height-1-j][c+16] = 'x';
-            else
-                curve[height-1-j][c+16] = '*';
-        }
-    }
-
-    /* Write the curve */
-    ecrire (fds, "\n\nOne column is the number of pages retrieved during ");
-    ecrireInt (fds, period);
-    ecrire (fds, " seconds : \n");
-    sprintf(curve[0], "%12d", maxvbis);
-    curve[0][12] = ' ';
-    int now_col = (crawler::now - beg_time) / period + 16;
-    curve[height][now_col] = '|';
-    ecrire(fds, curve[0]);
-    curve[height][now_col] = '-';
-    ecrireChar(fds, '\n');
-    /* Show time bounds : */
-    char *deb = asctime (localtime (&beg_time));
-    deb[strlen(deb)-1] = 0;
-    ecrire (fds, deb);
-    snprintf(curve[height+1], size + 3 - strlen(deb), "%10000s", "");
-    ecrire(fds, curve[height+1]);
-    time_t fin_time = beg_time + period * size;
-    char *fin = asctime (localtime (&fin_time));
-    ecrire (fds, fin);
+//    /* Compute the curve */
+//    int maxvbis = maxv;
+//    maxv = height; /* let's recompute it for next time */
+//    for (int i=beg, c=0; c<size; ++i, ++c) {
+//        if (i == size) i = 0; 
+//        if (tab1[i] > maxv) maxv = tab1[i];
+//        int h1 = (tab1[i] * height) / maxvbis;
+//        int h2 = (tab2[i] * height) / maxvbis;
+//        for (int j=0; j<height; ++j) {
+//            if (j >= h1)
+//                curve[height-1-j][c+16] = ' ';
+//            else if (j >= h2)
+//                curve[height-1-j][c+16] = 'x';
+//            else
+//                curve[height-1-j][c+16] = '*';
+//        }
+//    }
+//
+//    /* Write the curve */
+//    ecrire (fds, "\n\nOne column is the number of pages retrieved during ");
+//    ecrireInt (fds, period);
+//    ecrire (fds, " seconds : \n");
+//    sprintf(curve[0], "%12d", maxvbis);
+//    curve[0][12] = ' ';
+//    int now_col = (crawler::now - beg_time) / period + 16;
+//    curve[height][now_col] = '|';
+//    ecrire(fds, curve[0]);
+//    curve[height][now_col] = '-';
+//    ecrireChar(fds, '\n');
+//    /* Show time bounds : */
+//    char *deb = asctime (localtime (&beg_time));
+//    deb[strlen(deb)-1] = 0;
+//    ecrire (fds, deb);
+//    snprintf(curve[height+1], size + 3 - strlen(deb), "%10000s", "");
+//    ecrire(fds, curve[height+1]);
+//    time_t fin_time = beg_time + period * size;
+//    char *fin = asctime (localtime (&fin_time));
+//    ecrire (fds, fin);
 }
 
 #endif // GRAPH

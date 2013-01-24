@@ -27,24 +27,24 @@
 
 #define MAXCRAWLER  20
 
-static void cron ();
+static void cron (Crawler *pCrawler);
 
 ///////////////////////////////////////////////////////////
 
 // wait to limit bandwidth usage
 #ifdef MAXBANDWIDTH
-static void waitBandwidth (time_t *old) {
-    while (crawler::remainBand < 0) {
+static void waitBandwidth (time_t *old, Crawler *pCrawler) {
+    while (pCrawler->remainBand < 0) {
         poll(NULL, 0, 10);
-        crawler::now = time(NULL);
-        if (*old != crawler::now) {
-            *old = crawler::now;
-            cron ();
+        pCrawler->now = time(NULL);
+        if (*old != pCrawler->now) {
+            *old = pCrawler->now;
+            cron(pCrawler);
         }
     }
 }
 #else
-#define waitBandwidth(x) ((void) 0)
+#define waitBandwidth(x, y) ((void) 0)
 #endif // MAXBANDWIDTH
 
 #ifndef NDEBUG
@@ -53,65 +53,66 @@ static uint count = 0;
 
 ///////////////////////////////////////////////////////////
 // If this thread terminates, the whole program exits
-int main (int argc, char *argv[]) {
+int main (int argc, char *argv[])
+{
     // create all the structures
-    crawler glob(argc, argv);
+    Crawler crawler(argc, argv);
 
     // Start the search
-    printf("%s is starting its search\n", crawler::userAgent);
-    time_t old = crawler::now;
+    printf("%s is starting its search\n", crawler.userAgent);
+    time_t old = crawler.now;
 
     for (;;) {
         // update time
-        crawler::now = time(NULL);
-        if (old != crawler::now) {
+        crawler.now = time(NULL);
+        if (old != crawler.now) {
             // this block is called every second
-            old = crawler::now;
-            cron();
+            old = crawler.now;
+            cron(&crawler);
         }
-        waitBandwidth(&old);
-        for (int i=0; i<crawler::maxFds; i++)
-            crawler::ansPoll[i] = 0;
-        for (uint i=0; i<crawler::posPoll; i++)
-            crawler::ansPoll[crawler::pollfds[i].fd] = crawler::pollfds[i].revents;
-        crawler::posPoll = 0;
-        sequencer();
-        fetchDns();
-        fetchOpen();
-        checkAll();
+        waitBandwidth(&old, &crawler);
+        for (int i=0; i<crawler.maxFds; i++)
+            crawler.ansPoll[i] = 0;
+        for (uint i=0; i<crawler.posPoll; i++)
+            crawler.ansPoll[crawler.pollfds[i].fd] = crawler.pollfds[i].revents;
+        crawler.posPoll = 0;
+        sequencer(&crawler);
+        fetchDns(&crawler);
+        fetchOpen(&crawler);
+        checkAll(&crawler);
         // select
-        poll(crawler::pollfds, crawler::posPoll, 10);
+        poll(crawler.pollfds, crawler.posPoll, 10);
     }
 }
 
 // a lot of stats and profiling things
-static void cron () {
+static void cron (Crawler *pCrawler) {
     // shall we stop
 #ifdef EXIT_AT_END
-    if (crawler::URLsDisk->getLength() == 0
-            && crawler::URLsDiskWait->getLength() == 0
+    if (pCrawler->URLsDisk->getLength() == 0
+            && pCrawler->URLsDiskWait->getLength() == 0
             && debUrl == 0)
         exit(0);
 #endif // EXIT_AT_END
 
     // look for timeouts
-    checkTimeout();
+    checkTimeout(pCrawler);
     // see if we should read again urls in fifowait
-    if ((crawler::now % 300) == 0) {
-        crawler::readPriorityWait = crawler::URLsPriorityWait->getLength();
-        crawler::readWait = crawler::URLsDiskWait->getLength();
+    if ((pCrawler->now % 300) == 0) {
+        pCrawler->readPriorityWait = pCrawler->URLsPriorityWait->getLength();
+        pCrawler->readWait = pCrawler->URLsDiskWait->getLength();
     }
-    if ((crawler::now % 300) == 150) {
-        crawler::readPriorityWait = 0;
-        crawler::readWait = 0;
+    if ((pCrawler->now % 300) == 150) {
+        pCrawler->readPriorityWait = 0;
+        pCrawler->readWait = 0;
     }
 
 #ifdef MAXBANDWIDTH
     // give bandwidth
-    if (crawler::remainBand > 0) {
-        crawler::remainBand = MAXBANDWIDTH;
+    if (pCrawler->remainBand > 0) {
+        pCrawler->remainBand = MAXBANDWIDTH;
     } else {
-        crawler::remainBand = crawler::remainBand + MAXBANDWIDTH;
+        pCrawler->remainBand = pCrawler->remainBand + MAXBANDWIDTH;
     }
 #endif // MAXBANDWIDTH
 }

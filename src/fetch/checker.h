@@ -12,11 +12,11 @@
  * if not send it
  * @param u the url to check
  */
-void check (url *u);
+void check (url *u, Crawler *pCrawler);
 
 /** Check the extension of an url
  * @return true if it might be interesting, false otherwise
  */
-bool filter1 (char *host, char *file);
+bool filter1 (char *host, char *file, Crawler *pCrawler);
 
 #endif // CHECKER_H

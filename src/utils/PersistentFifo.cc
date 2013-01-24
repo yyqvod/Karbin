@@ -86,6 +86,7 @@ PersistentFifo::PersistentFifo (bool reload, const char *baseName) {
 }
 
 PersistentFifo::~PersistentFifo () {
+    //delete [] filename; 
     mypthread_mutex_destroy (&lock);
     close(rfds);
     close(wfds);
@@ -168,9 +169,9 @@ void PersistentFifo::updateWrite () {
         makeName(++fin);
         wfds = creat(fileName, S_IRUSR | S_IWUSR);
 #ifdef RELOAD
-        crawler::seen->save();
+//        crawler::seen->save();
 #ifdef NO_DUP
-        crawler::hDuplicate->save();
+//        crawler::hDuplicate->save();
 #endif
 #endif
     }

@@ -14,22 +14,22 @@
 
 using namespace std;
 
-static bool canGetUrl (bool *testPriority);
+static bool canGetUrl (bool *testPriority, Crawler *pCrawler);
 uint space = 0;
 
 #define maxPerCall 100
 
 /** start the sequencer
  */
-void sequencer () {
+void sequencer (Crawler *pCrawler) {
     bool testPriority = true;
     if (space == 0) {
-        space = crawler::inter->putAll();
+        space = pCrawler->inter->putAll();
     }
     int still = space;
     if (still > maxPerCall) still = maxPerCall;
     while (still) {
-        if (canGetUrl(&testPriority)) {
+        if (canGetUrl(&testPriority, pCrawler)) {
             space--; still--;
         } else {
             still = 0;
@@ -40,30 +40,30 @@ void sequencer () {
 /* Get the next url
  * here is defined how priorities are handled
  */
-static bool canGetUrl (bool *testPriority) {
+static bool canGetUrl (bool *testPriority, Crawler *pCrawler) {
     url *u;
 
-    if (crawler::readPriorityWait) {
-        crawler::readPriorityWait--;
-        u = crawler::URLsPriorityWait->get();
-        crawler::namedSiteList[u->hostHashCode()].putPriorityUrlWait(u);
+    if (pCrawler->readPriorityWait) {
+        pCrawler->readPriorityWait--;
+        u = pCrawler->URLsPriorityWait->get();
+        pCrawler->namedSiteList[u->hostHashCode()].putPriorityUrlWait(u);
         return true;
-    } else if (*testPriority && (u=crawler::URLsPriority->tryGet()) != NULL) {
+    } else if (*testPriority && (u=pCrawler->URLsPriority->tryGet()) != NULL) {
         // We've got one url (priority)
-        crawler::namedSiteList[u->hostHashCode()].putPriorityUrl(u);
+        pCrawler->namedSiteList[u->hostHashCode()].putPriorityUrl(u);
         return true;
     } else {
         *testPriority = false;
         // Try to get an ordinary url
-        if (crawler::readWait) {
-            crawler::readWait--;
-            u = crawler::URLsDiskWait->get();
-            crawler::namedSiteList[u->hostHashCode()].putUrlWait(u);
+        if (pCrawler->readWait) {
+            pCrawler->readWait--;
+            u = pCrawler->URLsDiskWait->get();
+            pCrawler->namedSiteList[u->hostHashCode()].putUrlWait(u);
             return true;
         } else {
-            u = crawler::URLsDisk->tryGet();
+            u = pCrawler->URLsDisk->tryGet();
             if (u != NULL) {
-                crawler::namedSiteList[u->hostHashCode()].putUrl(u);
+                pCrawler->namedSiteList[u->hostHashCode()].putUrl(u);
                 return true;
             } else {
                 return false;

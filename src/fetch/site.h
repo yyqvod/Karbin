@@ -11,10 +11,12 @@
 #include <time.h>
 #include "adns.h" 
 
+#include "crawler.h"
 #include "types.h"
 #include "utils/Fifo.h"
 #include "utils/url.h"
 
+struct Crawler;
 void initSite ();
 
 // define for the state of a connection
@@ -76,9 +78,11 @@ class NamedSite {
         void forgetUrl (url *u, FetchError reason);
     public:
         /** Constructor */
-        NamedSite ();
+        NamedSite (Crawler *aCraw);
         /** Destructor : never used */
         ~NamedSite ();
+        /* crawler pointer */
+        Crawler *pCrawler;
         /* name of the site */
         char name[maxSiteSize];
         /* port of the site */
@@ -132,9 +136,11 @@ class IPSite {
         url *getUrl ();
     public:
         /** Constructor */
-        IPSite ();
+        IPSite (Crawler *aCraw);
         /** Destructor : never used */
         ~IPSite ();
+        /* crawler pointer */
+        Crawler *pCrawler;
         /** Urls waiting for being fetched */
         Fifo<url> tab;
         /** Put an url in the fifo */

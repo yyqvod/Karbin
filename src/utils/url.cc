@@ -288,11 +288,11 @@ void url::print () {
 /* Set depth to max if necessary
  * try to find the ip addr
  * answer false if forbidden by robots.txt, true otherwise */
-bool url::initOK (url *from) {
+bool url::initOK (url *from, Crawler *pCrawler) {
 #if defined(DEPTHBYSITE) || defined(COOKIES)
     if (strcmp(from->getHost(), host)) { // different site
 #ifdef DEPTHBYSITE
-        depth = crawler::depthInSite;
+        depth = pCrawler->depthInSite;
 #endif // DEPTHBYSITE
     } else { // same site
 #ifdef COOKIES
@@ -307,7 +307,7 @@ bool url::initOK (url *from) {
         errno = tooDeep;
         return false;
     }
-    NamedSite *ns = crawler::namedSiteList + (hostHashCode());
+    NamedSite *ns = pCrawler->namedSiteList + (hostHashCode());
     if (!strcmp(ns->name, host) && ns->port == port) {
         switch (ns->dnsState) {
             case errorDns:
