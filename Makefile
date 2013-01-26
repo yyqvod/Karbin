@@ -7,7 +7,7 @@ dep:
 	(cd src; $(MAKE) dep)
 
 all debug prof:
-#	(cd adns; $(MAKE))
+	(cd adns; $(MAKE))
 	(cd src; $(MAKE) $@)
 	cp src/larbin .
 
