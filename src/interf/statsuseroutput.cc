@@ -58,7 +58,7 @@ void failure(url *u, FetchError reason)
 
 /** initialisation function
  */
-void initUserOutput()
+void initUserOutput(int num)
 {
     for (int i=0; i<nb; i++) {
         tabs[i] = 0;

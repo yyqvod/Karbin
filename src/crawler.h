@@ -23,6 +23,7 @@
 #include "utils/PersistentFifo.h"
 #include "utils/ConstantSizedFifo.h"
 #include "utils/SyncFifo.h"
+#include "utils/rendezvous.h"
 #include "utils/Fifo.h"
 #include "fetch/site.h"
 #include "fetch/checker.h"
@@ -51,11 +52,13 @@ struct Connexion {
 
 struct Crawler {
     /** Constructor : see crawler.cc for details */
-    Crawler (int argc, char * argv[]);
+    Crawler (int id, Rendezvous *pThreadSync);
     /** Destructor : never used */
     ~Crawler ();
     /** current time : avoid to many calls to time(NULL) */
     time_t now;
+    /* crawler identifier */
+    int crawlerId;
     /** List of pages allready seen (one bit per page) */
     hashTable *seen;
 #ifdef NO_DUP
@@ -79,6 +82,8 @@ struct Crawler {
      * but need a dns call
      */
     Fifo<NamedSite> *dnsSites;
+    /* Rendezvous object to syns all crawlers */
+    Rendezvous *pRend;
     /** Informations for the fetch
      * This array contain all the connections (empty or not)
      */

@@ -50,7 +50,7 @@ void failure(url *u, FetchError reason)
 
 /** initialisation function
  */
-void initUserOutput()
+void initUserOutput(int num)
 {
 }
 

@@ -28,7 +28,7 @@ void failure (url *u, FetchError reason);
 /** initialisation function
  * This function is called at the end of crawler initialisation
  */
-void initUserOutput ();
+void initUserOutput(int num);
 
 /** stats, called in particular by the webserver
  * the webserver is in another thread, so be careful

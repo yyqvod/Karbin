@@ -21,13 +21,14 @@
 #include "fetch/fetchPipe.h"
 #include "interf/output.h"
 #include "utils/mypthread.h"
+#include "utils/rendezvous.h"
 
 #include "utils/debug.h"
 
-#define MAXCRAWLER  20
+#define CRAWLERNUM 3
 
 static void cron(Crawler *pCrawler);
-static void startCrawler(void *pData);
+static void *startCrawler(void *pData);
 
 ///////////////////////////////////////////////////////////
 
@@ -48,46 +49,57 @@ static void waitBandwidth(time_t *old, Crawler *pCrawler)
 #define waitBandwidth(x, y) ((void) 0)
 #endif // MAXBANDWIDTH
 
-#ifndef NDEBUG
-static uint count = 0;
-#endif // NDEBUG
-
 ///////////////////////////////////////////////////////////
 // If this thread terminates, the whole program exits
 int main(int argc, char *argv[])
 {
-    // create all the structures
-    Crawler crawler(argc, argv);
+    int i;
+    Rendezvous *pRend = new Rendezvous(CRAWLERNUM);
 
-    // Start the search
-    printf("%s is starting its search\n", crawler.userAgent);
-    time_t old = crawler.now;
+    for (i = 0; i < CRAWLERNUM; i++) {
+        // create all the structures
+        Crawler *pCrawler = new Crawler(i+1, pRend);
+        startThread(startCrawler, pCrawler);
+        printf("Start %d\n", i+1);
+        sleep(5);
+    }
+
+    pthread_exit(NULL);
+}
+
+static void *startCrawler(void *pData)
+{
+    Crawler *pCrawler = (Crawler *)pData;
+    Rendezvous *pRend = pCrawler->pRend;
+
+    //Wait for all crawlers to get ready to Start the search
+    pRend->meet();
+    printf("Crawler NO.%d is starting its search\n", pCrawler->crawlerId);
+    time_t old = pCrawler->now;
 
     for (;;) {
         // update time
-        crawler.now = time(NULL);
-        if (old != crawler.now) {
+        pCrawler->now = time(NULL);
+        if (old != pCrawler->now) {
             // this block is called every second
-            old = crawler.now;
-            cron(&crawler);
+            old = pCrawler->now;
+            cron(pCrawler);
         }
-        waitBandwidth(&old, &crawler);
-        for (int i=0; i<crawler.maxFds; i++)
-            crawler.ansPoll[i] = 0;
-        for (uint i=0; i<crawler.posPoll; i++)
-            crawler.ansPoll[crawler.pollfds[i].fd] = crawler.pollfds[i].revents;
-        crawler.posPoll = 0;
-        sequencer(&crawler);
-        fetchDns(&crawler);
-        fetchOpen(&crawler);
-        checkAll(&crawler);
+        waitBandwidth(&old, pCrawler);
+        for (int i=0; i<pCrawler->maxFds; i++)
+            pCrawler->ansPoll[i] = 0;
+        for (uint i=0; i<pCrawler->posPoll; i++)
+            pCrawler->ansPoll[pCrawler->pollfds[i].fd] = pCrawler->pollfds[i].revents;
+        pCrawler->posPoll = 0;
+        sequencer(pCrawler);
+        fetchDns(pCrawler);
+        fetchOpen(pCrawler);
+        checkAll(pCrawler);
         // select
-        poll(crawler.pollfds, crawler.posPoll, 10);
+        poll(pCrawler->pollfds, pCrawler->posPoll, 10);
     }
-}
 
-static void startCrawler(void *pData)
-{
+    return NULL;
 }
 
 // a lot of stats and profiling things

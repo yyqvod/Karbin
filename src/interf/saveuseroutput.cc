@@ -89,12 +89,16 @@ void failure(url *u, FetchError reason)
 
 /** initialisation function
  */
-void initUserOutput()
+void initUserOutput(int num)
 {
-    mkdir(saveDir, S_IRWXU);
-    endFileName = strlen(saveDir);
+    char dirName[10];
+    
+    memset(dirName, 0, 10);
+    sprintf(dirName, "save%d/", num);
+    mkdir(dirName, S_IRWXU);
+    endFileName = strlen(dirName);
     fileName = new char[endFileName+maxUrlSize+50];
-    strcpy(fileName, saveDir);
+    strcpy(fileName, dirName);
     if (fileName[endFileName-1] != '/') fileName[endFileName++] = '/';
     strcpy(fileName+endFileName, "d00000/f00000");
     endFileName += 12; // indique le dernier char ecrit

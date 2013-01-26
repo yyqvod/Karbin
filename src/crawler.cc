@@ -36,10 +36,11 @@ using namespace std;
 /** Constructor : initialize almost everything
  * Everything is read from the config file (larbin.conf by default)
  */
-Crawler::Crawler(int argc, char *argv[])
+Crawler::Crawler(int id, Rendezvous *pThreadSync)
 {
     int i;
     void *rawMemory;
+    char fifoFile[20];
     char *configFile = (char *)"larbin.conf";
 #ifdef RELOAD
     bool reload = true;
@@ -47,26 +48,8 @@ Crawler::Crawler(int argc, char *argv[])
     bool reload = false;
 #endif
 
-    // verification of arguments
-    int pos = 1;
-    while (pos < argc) {
-        if (!strcmp(argv[pos], "-c") && argc > pos+1) {
-            configFile = argv[pos+1];
-            pos += 2;
-        } else if (!strcmp(argv[pos], "-scratch")) {
-            reload = false;
-            pos++;
-        } else {
-            break;
-        }
-    }
-    if (pos != argc) {
-        cerr << "usage : " << argv[0];
-        cerr << " [-c configFile] [-scratch]\n";
-        exit(1);
-    }
-
     // Standard values
+    crawlerId = id;
     now = time(NULL);
     readPriorityWait=0;
     readWait=0;
@@ -75,6 +58,7 @@ Crawler::Crawler(int argc, char *argv[])
 #ifdef MAXBANDWIDTH
     remainBand = MAXBANDWIDTH;
 #endif
+    pRend = pThreadSync;
     IPUrl = 0;
     waitDuration = 60;
     depthInSite = 5;
@@ -86,8 +70,13 @@ Crawler::Crawler(int argc, char *argv[])
     domains = NULL;
     // FIFOs
     seen = new hashTable(!reload);
+
+    memset(fifoFile, 0, 20);
+    sprintf(fifoFile, "fifo%d_", id);
     URLsDisk = new PersistentFifo(reload, fifoFile, seen);
-    URLsDiskWait = new PersistentFifo(reload, fifoFileWait, seen);
+    memset(fifoFile, 0, 20);
+    sprintf(fifoFile, "fifowait%d_", id);
+    URLsDiskWait = new PersistentFifo(reload, fifoFile, seen);
     URLsPriority = new SyncFifo<url>;
     URLsPriorityWait = new SyncFifo<url>;
     inter = new Interval(ramUrls);
@@ -158,7 +147,7 @@ Crawler::Crawler(int argc, char *argv[])
         adns_initflags (adns_if_nosigpipe | adns_if_debug); //adns_if_noerrprint
     adns_init(&ads, flags, NULL);
     // call init functions of all modules
-    initOutput();
+    initOutput(id);
     initSite();
     // let's ignore SIGPIPE
     static struct sigaction sn, so;

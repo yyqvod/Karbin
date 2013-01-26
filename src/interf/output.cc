@@ -58,22 +58,7 @@ void endOfLoad(html *parser, FetchError err)
     }
 }
 
-#ifdef THREAD_OUTPUT
-/** In this thread, end user manage the result of the crawl
- */
-//static void *startOutput (void *none) {
-//    initUserOutput();
-//}
-//
-//void initOutput () {
-//    startThread(startOutput, NULL);
-//}
-//
-#else // THREAD_OUTPUT not defined
-
-void initOutput()
+void initOutput(int num)
 {
-    initUserOutput();
+    initUserOutput(num);
 }
-
-#endif // THREAD_OUTPUT
