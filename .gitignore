@@ -1,0 +1,7 @@
+save*/
+adns/config.status
+fifo*
+larbin
+*.a
+*.swp
+*.depend
