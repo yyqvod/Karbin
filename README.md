@@ -9,8 +9,7 @@ make
 ```
 
 ## Configuring
-see larbin.conf. Please be sure to specify your mail
-There is also some documentation in the doc directory in html format
+see larbin.conf. 
 
 ## Running
 ```

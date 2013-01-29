@@ -25,7 +25,7 @@
 
 #include "utils/debug.h"
 
-#define CRAWLERNUM 3
+#define CRAWLERNUM 1
 
 static void cron(Crawler *pCrawler);
 static void *startCrawler(void *pData);

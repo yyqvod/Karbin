@@ -7,8 +7,8 @@ using namespace std;
 
 Rendezvous::Rendezvous(int threadNum)
 {
-    if ((count < 0) && (count != Rendezvous_INFINITE)) {
-        cerr<<"Count ("<<count<<") should be > 0"<<endl;
+    if ((threadNum < 0) && (threadNum != Rendezvous_INFINITE)) {
+        cerr<<"Count ("<<threadNum<<") should be > 0"<<endl;
         count = Rendezvous_INFINITE;
     }
 

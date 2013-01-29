@@ -250,7 +250,6 @@ void NamedSite::dnsAns(adns_answer *ans)
             memcpy (&addr,
                     &ans->rrs.addr->addr.inet.sin_addr,
                     sizeof (struct in_addr));
-            printf("%s: %s, Gona to get robots.txt\n", name, inet_ntoa(addr));
             // Get the robots.txt
             dnsOK();
         }

@@ -144,7 +144,7 @@ Crawler::Crawler(int id, Rendezvous *pThreadSync)
     ansPoll = new short[maxFds];
     // init non blocking dns calls
     adns_initflags flags =
-        adns_initflags (adns_if_nosigpipe | adns_if_debug); //adns_if_noerrprint
+        adns_initflags (adns_if_nosigpipe | adns_if_noerrprint); //adns_if_debug
     adns_init(&ads, flags, NULL);
     // call init functions of all modules
     initOutput(id);

@@ -161,7 +161,7 @@ static void pipeRead(Connexion *conn, Crawler *pCrawler)
     switch (size) {
         case 0:
             // End of file
-            printf("\t\t==> page size %d <==\n", conn->parser->pos);
+            //printf("\t\t==> page size %d <==\n", conn->parser->pos);
             if (conn->parser->endInput())
                 conn->err = (FetchError) errno;
             endOfFile(conn, pCrawler);
@@ -221,7 +221,6 @@ static void endOfFile(Connexion *conn, Crawler *pCrawler)
     close(conn->socket);
     if (conn->parser->isRobots) {
         // That was a robots.txt
-        printf("End of robots.txt\n");
         robots *r = ((robots *) conn->parser);
         r->parse(conn->err != success);
         r->server->robotsResult(conn->err);
@@ -229,7 +228,6 @@ static void endOfFile(Connexion *conn, Crawler *pCrawler)
         pCrawler->freeConns->put(conn);
     } else {
         // that was an html page
-        printf("End of Html page\n");
         manageHtml();
     }
 }

@@ -42,7 +42,8 @@ void check(url *u, Crawler *pCrawler)
             pCrawler->URLsDisk->put(u);
         }
 #else // not a SPECIFICSEARCH
-        printf("URLsDisk->put %s:%d/%s %d\n", u->getHost(),u->getPort(),u->getFile(),u->getDepth());
+        /* printf("URLsDisk->put %s:%d/%s %d\n", u->getHost(), u->getPort(),\
+                u->getFile(),u->getDepth()); */
         pCrawler->URLsDisk->put(u);
 #endif
     } else {
