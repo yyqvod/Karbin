@@ -6,19 +6,19 @@
 #define TYPES_H
 
 // Size of the HashSize (max number of urls that can be fetched)
-#define hashSize 64000000
+#define hashSize 512000000 //64M
 
 // Size of the duplicate hashTable
 #define dupSize hashSize
 #define dupFile "dupfile.bak"
 
 // Size of the arrays of Sites in main memory
-#define namedSiteListSize 20000
-#define IPSiteListSize 10000
+#define namedSiteListSize 200000
+#define IPSiteListSize 100000
 
 // Max number of urls in ram
-#define ramUrls 100000
-#define maxIPUrls 80000  // this should allow less dns call
+#define ramUrls 1000000
+#define maxIPUrls 800000  // this should allow less dns call
 
 // Max number of urls per site in Url
 #define maxUrlsBySite 40  // must fit in uint8_t
