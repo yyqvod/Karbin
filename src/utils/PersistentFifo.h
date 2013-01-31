@@ -26,9 +26,7 @@ class hashTable;
 class PersistentFifo {
     protected:
         uint in, out;
-#ifdef THREAD_OUTPUT
         pthread_mutex_t lock;
-#endif
         // number of the file used for reading
         int fin, fout;
         // name of files

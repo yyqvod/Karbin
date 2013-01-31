@@ -242,6 +242,11 @@ url::url(char *line)
         i++;
     }
 #ifndef COOKIES
+#ifdef DEBUG_HASH
+    char *cpos = strchr(line+i, ' ');
+    if (cpos != NULL)
+        *cpos = 0;
+#endif
     // Read file name
     file = newString(line+i);
 #else // COOKIES
@@ -254,6 +259,11 @@ url::url(char *line)
         cookie = new char[maxCookieSize];
         strcpy(cookie, cpos+1);
     }
+#ifdef DEBUG_HASH
+    cpos = strchr(line+i, ' ');
+    if (cpos != NULL)
+        *cpos = 0;
+#endif
     // Read file name
     file = newString(line+i);
 #endif // COOKIES
@@ -402,6 +412,9 @@ char *url::serialize()
         pos += sprintf(statstr+pos, " %s", cookie);
     }
 #endif // COOKIES
+#ifdef DEBUG_HASH
+    pos += sprintf(statstr+pos, " %u", hashCode() % nrVNode);
+#endif
     statstr[pos] = '\n';
     statstr[pos+1] = 0;
     return statstr;

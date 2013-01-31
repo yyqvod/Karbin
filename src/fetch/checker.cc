@@ -31,21 +31,24 @@ using namespace std;
 void check(url *u, Crawler *pCrawler)
 {
     if (pCrawler->seen->testSet(u)) {
+        int index = u->hashCode() % nrVNode;
         hashUrls();  // stat
-        // where should this link go ?
-#ifdef SPECIFICSEARCH
-        if (privilegedExts[0] != NULL
-                && matchPrivExt(u->getFile())) {
-            interestingExtension();
-            pCrawler->URLsPriority->put(u);
-        } else {
-            pCrawler->URLsDisk->put(u);
-        }
-#else // not a SPECIFICSEARCH
         /* printf("URLsDisk->put %s:%d/%s %d\n", u->getHost(), u->getPort(),\
-                u->getFile(),u->getDepth()); */
-        pCrawler->URLsDisk->put(u);
-#endif
+           u->getFile(),u->getDepth()); */
+        // where should this link go ?
+        if (map[index] == pCrawler->crawlerId) {
+            //printf("crawler(%d): url(%d) map(%d)\n", pCrawler->crawlerId, index, map[index]);
+            pCrawler->URLsDisk->put(u);
+        } else {
+            //printf("crawler(%d): url(%d) map(%d)\n", pCrawler->crawlerId, index, map[index]);
+//            pCrawler = crawlers[map[index]];
+            if (pCrawler)
+                pCrawler->URLsDisk->put(u);
+            else {
+                delete u;
+                cerr<<"** ERR: Wrong Crawler pointer ! **"<<endl;
+            }
+        }
     } else {
         // This url has already been seen
         answers(urlDup);

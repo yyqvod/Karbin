@@ -19,10 +19,8 @@ class ConstantSizedFifo {
         uint in, out;
         uint size;
         T **tab;
-#ifdef THREAD_OUTPUT
         pthread_mutex_t lock;
         pthread_cond_t nonEmpty;
-#endif
 
     public:
         /* Specific constructor */

@@ -21,9 +21,6 @@ extern uint stateMain;
 extern uint debug;
 
 // This can be usefull when having very big problem !!!
-/* #define stateMain(i) (cerr << "stateMain " << i << "\n") */
-
-#define stateMain(i) (stateMain = i)
 #define incDebug() debug++;
 #define debug(i) (debug = i)
 

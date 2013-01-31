@@ -25,56 +25,66 @@
 
 #include "utils/debug.h"
 
-#define CRAWLERNUM 1
+int nrCrawler = 2; //crawler numbers
+int map[nrVNode]; //Map: Virtual-Node --> Crawler
+Crawler *crawlers[nrVNode]; //record all crawlers
 
 static void cron(Crawler *pCrawler);
 static void *startCrawler(void *pData);
+static void mainThread();
 
-///////////////////////////////////////////////////////////
+#define stateMain(i) (printf("Craw(%d): stateMain  %d\n", pCrawler->crawlerId, i))
+//#define stateMain(i) ((void) 0)
 
-// wait to limit bandwidth usage
 #ifdef MAXBANDWIDTH
-static void waitBandwidth(time_t *old, Crawler *pCrawler)
-{
-    while (pCrawler->remainBand < 0) {
-        poll(NULL, 0, 10);
-        pCrawler->now = time(NULL);
-        if (*old != pCrawler->now) {
-            *old = pCrawler->now;
-            cron(pCrawler);
-        }
-    }
-}
+static void waitBandwidth(time_t *old, Crawler *pCrawler);
 #else
 #define waitBandwidth(x, y) ((void) 0)
 #endif // MAXBANDWIDTH
 
-///////////////////////////////////////////////////////////
-// If this thread terminates, the whole program exits
+// main thread: control crawler threads
 int main(int argc, char *argv[])
 {
-    int i;
-    Rendezvous *pRend = new Rendezvous(CRAWLERNUM);
+    int i, cNodes;
+    Rendezvous *pRend = new Rendezvous(nrCrawler);
 
-    for (i = 0; i < CRAWLERNUM; i++) {
+    cNodes = nrVNode / nrCrawler;
+    for (i = 0; i < nrVNode; i++) {
+        map[i] = i / cNodes;
+        //printf("map[%d] = %d\n", i, map[i]);
+    }
+
+    for (i = 0; i < nrCrawler; i++) {
         // create all the structures
-        Crawler *pCrawler = new Crawler(i+1, pRend);
-        startThread(startCrawler, pCrawler);
-        printf("Start %d\n", i+1);
+        crawlers[i] = new Crawler(i, pRend);
+        startThread(startCrawler, crawlers[i]);
+        printf("Start %d\n", i);
         sleep(5);
     }
 
-    pthread_exit(NULL);
+    for (i = nrCrawler; i < nrVNode; i++)
+        crawlers[i] = NULL;
+
+    mainThread();
+}
+
+static void mainThread()
+{
+    while (1) {
+        sleep(5);
+        printf("In main thread\n");
+    }
 }
 
 static void *startCrawler(void *pData)
 {
+    int count = 0;
     Crawler *pCrawler = (Crawler *)pData;
     Rendezvous *pRend = pCrawler->pRend;
 
     //Wait for all crawlers to get ready to Start the search
     pRend->meet();
-    printf("Crawler NO.%d is starting its search\n", pCrawler->crawlerId);
+    printf("Crawler NO.%d starts searching\n", pCrawler->crawlerId);
     time_t old = pCrawler->now;
 
     for (;;) {
@@ -85,18 +95,26 @@ static void *startCrawler(void *pData)
             old = pCrawler->now;
             cron(pCrawler);
         }
+        stateMain(-count);
         waitBandwidth(&old, pCrawler);
+        stateMain(1);
         for (int i=0; i<pCrawler->maxFds; i++)
             pCrawler->ansPoll[i] = 0;
         for (uint i=0; i<pCrawler->posPoll; i++)
             pCrawler->ansPoll[pCrawler->pollfds[i].fd] = pCrawler->pollfds[i].revents;
         pCrawler->posPoll = 0;
+        stateMain(2);
         sequencer(pCrawler);
+        stateMain(3);
         fetchDns(pCrawler);
+        stateMain(4);
         fetchOpen(pCrawler);
+        stateMain(5);
         checkAll(pCrawler);
         // select
+        stateMain(count++);
         poll(pCrawler->pollfds, pCrawler->posPoll, 10);
+        stateMain(6);
     }
 
     return NULL;
@@ -134,3 +152,18 @@ static void cron(Crawler *pCrawler)
     }
 #endif // MAXBANDWIDTH
 }
+
+#ifdef MAXBANDWIDTH
+// wait to limit bandwidth usage
+static void waitBandwidth(time_t *old, Crawler *pCrawler)
+{
+    while (pCrawler->remainBand < 0) {
+        poll(NULL, 0, 10);
+        pCrawler->now = time(NULL);
+        if (*old != pCrawler->now) {
+            *old = pCrawler->now;
+            cron(pCrawler);
+        }
+    }
+}
+#endif

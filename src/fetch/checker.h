@@ -8,6 +8,10 @@
 #include "types.h"
 #include "utils/Vector.h"
 
+extern int nrCrawler;
+extern int map[nrVNode]; //Map: Virtual-Node --> Crawler
+extern Crawler *crawlers[nrVNode]; //record all crawlers
+
 /** check if an url is allready known
  * if not send it
  * @param u the url to check
