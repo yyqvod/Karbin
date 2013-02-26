@@ -20,7 +20,7 @@ using namespace std;
 /** A page has been loaded successfully
  * @param page the page that has been fetched
  */
-void loaded(html *page)
+void loaded(html *page, Crawler *pCrawler)
 {
     // Here should be the code for managing everything
     // page->getHeaders() gives a char* containing the http headers

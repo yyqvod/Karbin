@@ -59,15 +59,20 @@ static bool canGetUrl(bool *testPriority, Crawler *pCrawler)
         // Try to get an ordinary url
         if (pCrawler->readWait) {
             pCrawler->readWait--;
+            printf("Crwaler[%d]: DiskWait get\n", pCrawler->crawlerId);
             u = pCrawler->URLsDiskWait->get();
+            printf("Crwaler[%d]: Got %s\n", pCrawler->crawlerId, u->getHost());
             pCrawler->namedSiteList[u->hostHashCode()].putUrlWait(u);
             return true;
         } else {
+            printf("Crwaler[%d]: Disk tryGet\n", pCrawler->crawlerId);
             u = pCrawler->URLsDisk->tryGet();
             if (u != NULL) {
+                printf("Crwaler[%d]: Got %s\n", pCrawler->crawlerId, u->getHost());
                 pCrawler->namedSiteList[u->hostHashCode()].putUrl(u);
                 return true;
             } else {
+                printf("Crwaler[%d]: Got NULL\n", pCrawler->crawlerId);
                 return false;
             }
         }

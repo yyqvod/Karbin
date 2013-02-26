@@ -11,7 +11,6 @@
  * see doc/custom-eng.html for more details
  */
 
-//#define DEBUG_HASH
 /////////////////////////////////////////////////////////////
 // Select the output module you want to use
 

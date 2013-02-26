@@ -23,8 +23,8 @@ using namespace std;
  */
 void fetchOpen(Crawler *pCrawler)
 {
-    static time_t next_call = 0;
-    if (pCrawler->now < next_call) { // too early to come back
+    pCrawler->next_call = 0;
+    if (pCrawler->now < pCrawler->next_call) { // too early to come back
         return;
     }
     int cont = 1;
@@ -33,8 +33,8 @@ void fetchOpen(Crawler *pCrawler)
         if (s == NULL) {
             cont = 0;
         } else {
-            next_call = s->fetch();
-            cont = (next_call == 0);
+            pCrawler->next_call = s->fetch();
+            cont = (pCrawler->next_call == 0);
         }
     }
 }

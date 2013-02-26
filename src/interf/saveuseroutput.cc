@@ -27,7 +27,7 @@ static uint endFileName;
 /** A page has been loaded successfully, save it to disk
  * @param page the page that has been fetched
  */
-void loaded(html *page)
+void loaded(html *page, Crawler *pCrawler)
 {
     nbfile++;
     if (nbfile < filesPerDir) {

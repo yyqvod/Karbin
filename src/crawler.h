@@ -57,6 +57,11 @@ struct Crawler {
     ~Crawler ();
     /** current time : avoid to many calls to time(NULL) */
     time_t now;
+    time_t next_call;
+
+    /* used for mirror save */
+    char *fileName;
+    uint endFileName;
     /* crawler identifier */
     int crawlerId;
     /** List of pages allready seen (one bit per page) */

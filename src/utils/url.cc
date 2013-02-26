@@ -398,10 +398,9 @@ int url::writeUrl(char *buf)
 }
 
 /* serialize the url for the Persistent Fifo */
-char *url::serialize()
+void url::serialize(char *statstr)
 {
     // this buffer is protected by the lock of PersFifo
-    static char statstr[maxUrlSize+40+maxCookieSize];
     int pos = sprintf(statstr, "%u ", depth);
 #ifdef URL_TAGS
     pos += sprintf(statstr+pos, "%u ", tag);
@@ -417,7 +416,6 @@ char *url::serialize()
 #endif
     statstr[pos] = '\n';
     statstr[pos+1] = 0;
-    return statstr;
 }
 
 /* very thread unsafe serialisation in a static buffer */

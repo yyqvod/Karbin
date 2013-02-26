@@ -33,7 +33,7 @@ static double totalbytes = 0;
 /** A page has been loaded successfully
  * @param page the page that has been fetched
  */
-void loaded(html *page)
+void loaded(html *page, Crawler *pCrawler)
 {
     uint32_t l = page->getLength();
     int t = l / taille;

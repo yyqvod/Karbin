@@ -126,8 +126,9 @@ url *PersistentFifo::get()
  */
 void PersistentFifo::put(url *obj)
 {
+    char s[maxUrlSize+40+maxCookieSize];
     mypthread_mutex_lock(&lock);
-    char *s = obj->serialize(); // statically allocated string
+    obj->serialize(s); // statically allocated string
     writeUrl(s);
     in++;
     updateWrite();

@@ -90,7 +90,7 @@ class url {
   int writeUrl (char *buf);
 
   /* serialize the url for the Persistent Fifo */
-  char *serialize ();
+  void serialize(char *statstr);
 
   /* very thread unsafe serialisation in a static buffer */
   char *getUrl();

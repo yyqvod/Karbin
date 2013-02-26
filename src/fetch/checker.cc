@@ -41,7 +41,7 @@ void check(url *u, Crawler *pCrawler)
             pCrawler->URLsDisk->put(u);
         } else {
             //printf("crawler(%d): url(%d) map(%d)\n", pCrawler->crawlerId, index, map[index]);
-//            pCrawler = crawlers[map[index]];
+            pCrawler = crawlers[map[index]];
             if (pCrawler)
                 pCrawler->URLsDisk->put(u);
             else {
