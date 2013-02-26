@@ -25,7 +25,7 @@
 
 #include "utils/debug.h"
 
-int nrCrawler = 2; //crawler numbers
+int nrCrawler = 3; //crawler numbers
 int map[nrVNode]; //Map: Virtual-Node --> Crawler
 Crawler *crawlers[nrVNode]; //record all crawlers
 

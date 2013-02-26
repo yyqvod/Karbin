@@ -26,3 +26,7 @@ cleanhere:
 	$(RM) core gmon.out
 	$(RM) fifo*
 	$(RM) hashtable.* dupfile.*
+
+remove:
+	$(RM) fifo*
+	$(RM) -r save*

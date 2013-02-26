@@ -5,7 +5,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 // Number of vitural node
-#define nrVNode 10
+#define nrVNode 12
 
 // Size of the HashSize (max number of urls that can be fetched)
 #define hashSize 512000000 //64M
